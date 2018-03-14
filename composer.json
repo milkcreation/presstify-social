@@ -1,0 +1,27 @@
+{
+  "name": "presstify-plugins/social",
+  "description": "PresstiFy Plugin Social",
+  "type": "presstify-plugins",
+  "keywords": ["presstify", "plugins", "wordpress", "social"],
+  "homepage": "http://svn.milkcreation.fr/presstify-plugins/social",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy.manner@milkcreation.fr",
+      "role": "Developper"
+    }
+  ],
+  "config" : {
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "optimize-autoloader": true
+  },
+  "autoload": {
+    "psr-4": {
+      "tiFy\\Plugins\\Social\\": ""
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
