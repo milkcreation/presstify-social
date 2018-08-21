@@ -6,14 +6,15 @@
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 1.4.1
+ * @version 1.4.2
  */
 
 namespace tiFy\Plugins\Social;
 
+use tiFy\App\Plugin;
 use tiFy\Core\Options\Options;
 
-class Social extends \tiFy\App\Plugin
+class Social extends Plugin
 {
     /**
      * Liste des options
@@ -26,10 +27,8 @@ class Social extends \tiFy\App\Plugin
      *
      * @return void
      */
-    public function __construct()
+    public function appBoot()
     {
-        parent::__construct();
-
         // Récupération des options enregistrées
         self::$Options = get_option('tify_social_share', []);
 
