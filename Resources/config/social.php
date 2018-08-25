@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Exemple de configuration.
  */

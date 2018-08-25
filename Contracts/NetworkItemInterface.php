@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use tiFy\App\AppInterface;
 use tiFy\Contracts\App\Item\AppItemInterface;
 use tiFy\Kernel\Templates\EngineInterface;
+use tiFy\Options\Options;
 
 interface NetworkItemInterface extends AppItemInterface
 {
