@@ -6,16 +6,7 @@ use tiFy\Plugins\Social\NetworkItems\AbstractNetworkItem;
 
 class Twitter extends AbstractNetworkItem
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getIcon()
-    {
-        return "<i class=\"ion ion-logo-twitter\"></i>";
-    }
-
-
-    /** ________________________________________________________________________________________________________________________ */
+    /** ________________________________________________________________________________________________________________ */
     /**
      * Initialisation globale
      * @todo

@@ -6,15 +6,7 @@ use tiFy\Plugins\Social\NetworkItems\AbstractNetworkItem;
 
 class GooglePlus extends AbstractNetworkItem
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function getIcon()
-    {
-        return "<i class=\"ion ion-logo-googleplus\"></i>";
-    }
-
-    /** ________________________________________________________________________________________________________________________ */
+    /** ________________________________________________________________________________________________________________*/
     /**
      * Initialisation globale
      *

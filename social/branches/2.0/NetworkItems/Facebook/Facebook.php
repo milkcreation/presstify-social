@@ -41,15 +41,7 @@ class Facebook extends AbstractNetworkItem
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getIcon()
-    {
-        return "<i class=\"ion ion-logo-facebook\"></i>";
-    }
-
-    /** ________________________________________________________________________________________________________________________ */
+    /** ________________________________________________________________________________________________________________ */
     /**
      * Initialisation globale de Wordpress.
      *

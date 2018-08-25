@@ -6,7 +6,7 @@
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 1.4.3
+ * @version 2.0.0
  */
 
 namespace tiFy\Plugins\Social;
@@ -14,8 +14,8 @@ namespace tiFy\Plugins\Social;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use tiFy\App\AbstractAppController;
-use tiFy\Core\Options\Options;
+use tiFy\App\Dependency\AbstractAppDependency;
+use tiFy\Options\Options;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 use tiFy\Plugins\Social\SocialServiceProvider;
 
@@ -25,19 +25,19 @@ use tiFy\Plugins\Social\SocialServiceProvider;
  *
  * Activation :
  * ----------------------------------------------------------------------------------------------------
- * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProviders à la liste des fournisseurs de services
+ * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services
  *     chargés automatiquement par l'application.
  * ex.
  * <?php
  * ...
- * use tiFy\Plugins\Social\SocialServiceProviders;
+ * use tiFy\Plugins\Social\SocialServiceProvider;
  * ...
  *
  * return [
  *      ...
  *      'providers' => [
  *          ...
- *          SocialServiceProviders::class
+ *          SocialServiceProvider::class
  *          ...
  *      ]
  * ];
@@ -47,7 +47,7 @@ use tiFy\Plugins\Social\SocialServiceProvider;
  * Dans le dossier de config, créer le fichier social.php
  * @see /vendor/presstify-plugins/social/Resources/config/social.php Exemple de configuration
  */
-class Social extends AbstractAppController
+class Social extends AbstractAppDependency
 {
     /**
      * {@inheritdoc}
@@ -56,7 +56,7 @@ class Social extends AbstractAppController
     {
         $this->app->appAddAction('wp_enqueue_scripts', [$this, 'wp_enqueue_scripts']);
         $this->app->appAddAction('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
-        $this->app->appAddAction('tify_options_register_node', [$this, 'tify_options_register_node']);
+        $this->app->appAddAction('tify_options_register', [$this, 'optionsTab']);
 
         require_once __DIR__ . '/helpers.php';
     }
@@ -69,7 +69,7 @@ class Social extends AbstractAppController
     public function wp_enqueue_scripts()
     {
         if (config('social.wp_enqueue_scripts', true)) :
-            \wp_enqueue_style('ionicons');
+
         endif;
     }
 
@@ -80,10 +80,12 @@ class Social extends AbstractAppController
      */
     public function admin_enqueue_scripts()
     {
+        field('toggle-switch')->enqueue_scripts();
+
         wp_register_style(
             'tiFySocial-adminOptions',
             class_info($this)->getUrl() . '/Resources/dist/css/admin-options.css',
-            ['ionicons'],
+            [],
             180822,
             'screen'
         );
@@ -185,11 +187,11 @@ class Social extends AbstractAppController
      *
      * @return void
      */
-    public function tify_options_register_node($options)
+    public function optionsTab($options)
     {
-        $options::registerNode(
+        $options->register(
             [
-                'id'    => 'tiFyPluginSocial',
+                'name'    => 'tiFySocial',
                 'title' => __('Réseaux sociaux', 'tify'),
             ]
         );
