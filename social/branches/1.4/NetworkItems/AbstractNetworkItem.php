@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use tiFy\Contracts\App\AppInterface;
 use tiFy\App\Item\AbstractAppItemController;
 use tiFy\Kernel\Templates\EngineInterface;
+use tiFy\Kernel\Tools;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 use tiFy\Plugins\Social\NetworkItems\NetworkItemBaseTemplate;
 
@@ -36,7 +37,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
         'option_name'     => '',
         'order'           => 0,
         'title'           => '',
-        'uri'             => ''
+        'uri'             => '',
     ];
 
     /**
@@ -63,7 +64,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     public function boot()
     {
         $this->setView();
-        $this->app->appAddAction('tify_options_register_node', [$this, 'optionsForm']);
+        $this->app->appAddAction('tify_options_register', [$this, 'optionsForm']);
     }
 
     /**
@@ -74,8 +75,8 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
         return array_merge(
             $this->attributes,
             [
-                'option_name'     => $this->getOptionName(),
-                'title'           => ucfirst($this->name)
+                'option_name' => $this->getOptionName(),
+                'title'       => ucfirst($this->name),
             ]
         );
     }
@@ -85,7 +86,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function getIcon()
     {
-        return '';
+        return Tools::File()->svgGetContents(class_info($this)->getDirname() . '/icon.svg') ? : '';
     }
 
     /**
@@ -139,6 +140,14 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
+    public function getStatus()
+    {
+        return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' :'offline');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function hasUri()
     {
         return !empty($this->get('uri', ''));
@@ -159,14 +168,16 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function optionsForm($options)
     {
-        $options::registerNode(
+        $options->register(
             [
-                'id'     => "tiFyPluginSocial-{$this->getName()}",
-                'parent' => 'tiFyPluginSocial',
-                'title'  => "<span class=\"tiFyPluginSocial-tabIcon\">{$this->getIcon()}</span>" .
-                    "<span class=\"tiFyPluginSocial-tabTitle\">{$this->getTitle()}</span>",
-                'cb'     => function () {
-                    echo $this->getView()
+                'name'    => "tiFySocial-{$this->getName()}",
+                'parent'  => 'tiFySocial',
+                'title'   => "<span class=\"tiFySocial-tabIcon\">{$this->getIcon()}</span>" .
+                    "<span class=\"tiFySocial-tabTitle\">{$this->getTitle()}</span>" .
+                    "<span class=\"tiFySocial-tabStatus tiFySocial-tabStatus--{$this->getStatus()}\">&#x25cf;</span>",
+
+                'content' => function () {
+                    return $this->getView()
                         ->render('options::admin', $this->all());
 
                 },
@@ -202,7 +213,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
         Arr::set($attrs, 'attrs.href', $this->get('uri', ''));
 
         if (!Arr::has($attrs, 'attrs.class')) :
-            Arr::set($attrs, 'attrs.class', 'tiFySocial-link tiFySocial-link--'. $this->getName());
+            Arr::set($attrs, 'attrs.class', 'tiFySocial-link tiFySocial-link--' . $this->getName());
         endif;
 
         if (!Arr::has($attrs, 'attrs.title')) :

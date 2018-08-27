@@ -18,7 +18,7 @@ class SocialServiceProvider extends AppServiceProvider
      * {@inheritdoc}
      */
     protected $singletons = [
-        Social::class
+        Social::class,
     ];
 
     /**
@@ -28,7 +28,22 @@ class SocialServiceProvider extends AppServiceProvider
     {
         $social = $this->app->resolve(Social::class);
 
-        foreach (config('social.networks', []) as $name => $attrs) :
+        $networkItems = config()->has('social.networks')
+            ? config('social.networks', [])
+            : [
+                'dailymotion' => [],
+                'facebook'    => [],
+                'google-plus' => [],
+                'instagram'   => [],
+                'linkedin'    => [],
+                'pinterest'   => [],
+                'twitter'     => [],
+                'viadeo'      => [],
+                'vimeo'       => [],
+                'youtube'     => [],
+            ];
+
+        foreach ($networkItems as $name => $attrs) :
             if (!$abstract = $social->getAbstract($name)) :
                 continue;
             endif;
