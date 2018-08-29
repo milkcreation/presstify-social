@@ -3,12 +3,10 @@
 namespace tiFy\Plugins\Social\NetworkItems;
 
 use Illuminate\Support\Arr;
-use tiFy\Contracts\App\AppInterface;
 use tiFy\App\Item\AbstractAppItemController;
-use tiFy\Kernel\Templates\EngineInterface;
+use tiFy\Contracts\App\AppInterface;
 use tiFy\Kernel\Tools;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
-use tiFy\Plugins\Social\NetworkItems\NetworkItemBaseTemplate;
 
 abstract class AbstractNetworkItem extends AbstractAppItemController implements NetworkItemInterface
 {
@@ -21,17 +19,19 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * Liste des attributs de configuration.
      * @var array {
-     * @var bool $active Activation de la prise en charge.
-     * @var string $icon Icone représentative.
-     * @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
-     * @var string $option_name Nom d'enregistrement des attributs en base.
-     * @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
-     * @var string $title Intitulé de qualification du réseau.
-     * @var string $uri Lien vers la page du compte
+     *      @var bool $active Activation de la prise en charge.
+     *      @var bool $active Activation de l'administrabilité.
+     *      @var string $icon Icone représentative.
+     *      @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
+     *      @var string $option_name Nom d'enregistrement des attributs en base.
+     *      @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
+     *      @var string $title Intitulé de qualification du réseau.
+     *      @var string $uri Lien vers la page du compte
      * }
      */
     protected $attributes = [
         'active'          => false,
+        'admin'           => true,
         'icon'            => '',
         'page_link_attrs' => [],
         'option_name'     => '',
@@ -49,6 +49,10 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * CONSTRUCTEUR.
      *
+     * @param string Nom de qualification.
+     * @param array $attrs Attributs de configuration.
+     * @param AppInterface $app Instance de l'application.
+     *
      * @return void
      */
     public function __construct($name, $attrs = [], AppInterface $app)
@@ -64,7 +68,6 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     public function boot()
     {
         $this->setView();
-        $this->app->appAddAction('tify_options_register', [$this, 'optionsForm']);
     }
 
     /**
@@ -86,7 +89,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function getIcon()
     {
-        return Tools::File()->svgGetContents(class_info($this)->getDirname() . '/icon.svg') ? : '';
+        return Tools::File()->svgGetContents(class_info($this)->getDirname() . '/icon.svg') ?: '';
     }
 
     /**
@@ -116,14 +119,6 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function getView()
-    {
-        return $this->view;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getOptionName()
     {
         return "tify_social_share[{$this->getOptionNameKey()}]";
@@ -142,7 +137,15 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function getStatus()
     {
-        return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' :'offline');
+        return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' : 'offline');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getView()
+    {
+        return $this->view;
     }
 
     /**
@@ -166,23 +169,9 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function optionsForm($options)
+    public function isAdmin()
     {
-        $options->register(
-            [
-                'name'    => "tiFySocial-{$this->getName()}",
-                'parent'  => 'tiFySocial',
-                'title'   => "<span class=\"tiFySocial-tabIcon\">{$this->getIcon()}</span>" .
-                    "<span class=\"tiFySocial-tabTitle\">{$this->getTitle()}</span>" .
-                    "<span class=\"tiFySocial-tabStatus tiFySocial-tabStatus--{$this->getStatus()}\">&#x25cf;</span>",
-
-                'content' => function () {
-                    return $this->getView()
-                        ->render('options::admin', $this->all());
-
-                },
-            ]
-        );
+        return $this->get('admin', true);
     }
 
     /**
@@ -191,7 +180,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     public function pageLink($attrs = [])
     {
         if (!$this->isActive() || (!$uri = $this->get('uri', ''))) :
-            return;
+            return '';
         endif;
 
         $attrs = array_merge(

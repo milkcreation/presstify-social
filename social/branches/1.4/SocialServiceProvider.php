@@ -4,10 +4,19 @@ namespace tiFy\Plugins\Social;
 
 use tiFy\App\Container\AppServiceProvider;
 use tiFy\Plugins\Social\Social;
+use tiFy\Plugins\Social\Admin\Options;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 
 class SocialServiceProvider extends AppServiceProvider
 {
+    /**
+     * {@inheritdoc}
+     */
+    protected $singletons = [
+        Social::class,
+        Options::class
+    ];
+
     /**
      * Liste des réseaux déclarés.
      * @var array
@@ -17,16 +26,10 @@ class SocialServiceProvider extends AppServiceProvider
     /**
      * {@inheritdoc}
      */
-    protected $singletons = [
-        Social::class,
-    ];
-
-    /**
-     * {@inheritdoc}
-     */
     public function boot()
     {
         $social = $this->app->resolve(Social::class);
+        $this->app->resolve(Options::class);
 
         $networkItems = config()->has('social.networks')
             ? config('social.networks', [])
@@ -48,7 +51,7 @@ class SocialServiceProvider extends AppServiceProvider
                 continue;
             endif;
 
-            $concrete = $this->getContainer()
+            $concrete = $this->app
                 ->singleton($abstract)
                 ->build([$name, $attrs, $this->app]);
 
