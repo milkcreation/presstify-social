@@ -6,7 +6,7 @@
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 2.0.0
+ * @version 1.4.4
  */
 
 namespace tiFy\Plugins\Social;
@@ -15,9 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use tiFy\App\Dependency\AbstractAppDependency;
-use tiFy\Options\Options;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
-use tiFy\Plugins\Social\SocialServiceProvider;
 
 /**
  * Class Social
@@ -54,29 +52,15 @@ class Social extends AbstractAppDependency
      */
     public function boot()
     {
-        $this->app->appAddAction('wp_enqueue_scripts', [$this, 'wp_enqueue_scripts']);
         $this->app->appAddAction('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
-        $this->app->appAddAction('tify_options_register', [$this, 'optionsTab']);
 
         require_once __DIR__ . '/helpers.php';
     }
 
     /**
-     * Mise en file automatique des scripts de l'interface client.
-     *
-     * @return null
-     */
-    public function wp_enqueue_scripts()
-    {
-        if (config('social.wp_enqueue_scripts', true)) :
-
-        endif;
-    }
-
-    /**
      * Mise en file des scripts de l'interface d'administration.
      *
-     * @return null
+     * @return void
      */
     public function admin_enqueue_scripts()
     {
@@ -111,6 +95,8 @@ class Social extends AbstractAppDependency
         if (class_exists($abstract)) :
             return $abstract;
         endif;
+
+        return '';
     }
 
     /**
@@ -136,9 +122,11 @@ class Social extends AbstractAppDependency
     {
         return (new Collection($this->getItems()))
             ->filter(function ($item) {
+                /** @var NetworkItemInterface $item */
                 return ($item->isActive() === true) && ($item->hasUri() === true);
             })
             ->sortBy(function ($item) {
+                /** @var NetworkItemInterface $item */
                 return $item->getOrder();
             })
             ->all();
@@ -178,24 +166,5 @@ class Social extends AbstractAppDependency
         $networkItem = container($this->getAbstract($alias));
 
         return $networkItem->pageLink();
-    }
-
-    /**
-     * Déclaration de la boîte à onglets d'administration des options des réseaux sociaux déclarés.
-     *
-     * @param Options $options Instance de la classe des options de presstiFy.
-     *
-     * @return void
-     */
-    public function optionsTab($options)
-    {
-        $options->register(
-            [
-                'name'    => 'tiFySocial',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ]
-        );
-
-        \register_setting('tify_options', 'tify_social_share');
     }
 }
