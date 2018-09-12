@@ -6,7 +6,7 @@
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 1.4.4
+ * @version 1.4.5
  */
 
 namespace tiFy\Plugins\Social;
