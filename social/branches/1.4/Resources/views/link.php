@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \tiFy\Plugins\Social\Contracts\NetworkItemTemplateInterface $this
+ * @var \tiFy\Plugins\Social\Contracts\NetworkItemViewInterface $this
  */
 ?>
 

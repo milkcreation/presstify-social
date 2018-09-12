@@ -16,7 +16,7 @@ class Facebook extends AbstractNetworkItem
         parent::boot();
 
         /**
-         * $this->getView()
+         * $this->view()
          * ->modifyFolder('options', __DIR__ . '/views');
          *
          * $this->app->appAddAction('init', [$this, 'init']);
@@ -41,7 +41,7 @@ class Facebook extends AbstractNetworkItem
         );
     }
 
-    /** ________________________________________________________________________________________________________________ */
+    // _________________________________________________________________________________________________________________
     /**
      * Initialisation globale de Wordpress.
      *
@@ -64,9 +64,7 @@ class Facebook extends AbstractNetworkItem
         );
     }
 
-    /**
-     * -----------------------------------------------------------------------------------------------------------------------------
-     */
+    // _________________________________________________________________________________________________________________
     /**
      * Mise en file des scripts de l'interface utilisateur
      * @todo

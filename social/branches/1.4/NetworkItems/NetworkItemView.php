@@ -3,7 +3,7 @@
 namespace tiFy\Plugins\Social\NetworkItems;
 
 use tiFy\Kernel\Templates\TemplateController;
-use tiFy\Plugins\Social\Contracts\NetworkItemTemplateInterface;
+use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
 
 /**
  * Class NetworkItemBaseTemplate
@@ -11,7 +11,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemTemplateInterface;
  *
  * @method bool isActive()
  */
-class NetworkItemBaseTemplate extends TemplateController implements NetworkItemTemplateInterface
+class NetworkItemView extends TemplateController implements NetworkItemViewInterface
 {
 
 }
