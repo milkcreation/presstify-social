@@ -2,7 +2,7 @@
 
 /**
  * @name Social
- * @desc Gestion des réseaux sociaux
+ * @desc Gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
@@ -52,7 +52,7 @@ class Social extends AbstractAppDependency
      */
     public function boot()
     {
-        $this->app->appAddAction('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
+        add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
 
         require_once __DIR__ . '/helpers.php';
     }
@@ -135,6 +135,7 @@ class Social extends AbstractAppDependency
     /**
      * Affichage d'un menu de la liste des liens vers la page des comptes des réseaux.
      *
+     * @param array $args
      * @return string
      */
     public function menuRender($args = [])
@@ -152,19 +153,22 @@ class Social extends AbstractAppDependency
         return view()
             ->setDirectory(__DIR__ . '/Resources/views')
             ->addFolder('menu', __DIR__ . '/Resources/views')
-            ->render('menu::list', $args);
+            ->make('menu::list', $args);
     }
 
     /**
      * Affichage d'un lien vers la page du compte d'un réseau.
      *
+     * @param string $alias Nom de qualification du réseau.
+     * @param array $attrs Liste des attributs de configuration personnalisé.
+     *
      * @return string
      */
-    public function pageLinkRender($alias)
+    public function pageLinkRender($alias, $attrs = [])
     {
         /** @var NetworkItemInterface $networkItem */
         $networkItem = container($this->getAbstract($alias));
 
-        return $networkItem->pageLink();
+        return $networkItem->pageLink($attrs);
     }
 }

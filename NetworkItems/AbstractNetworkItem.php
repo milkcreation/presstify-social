@@ -5,6 +5,7 @@ namespace tiFy\Plugins\Social\NetworkItems;
 use Illuminate\Support\Arr;
 use tiFy\App\Item\AbstractAppItemController;
 use tiFy\Contracts\App\AppInterface;
+use tiFy\Contracts\Views\ViewsInterface;
 use tiFy\Kernel\Tools;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 
@@ -15,6 +16,12 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      * @var string
      */
     protected $name = '';
+
+    /**
+     * Instance du gestionnaire de gabarits d'affichage.
+     * @var ViewsInterface
+     */
+    protected $view;
 
     /**
      * Liste des attributs de configuration.
@@ -41,12 +48,6 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     ];
 
     /**
-     * Classe de rappel des gabarits d'affichage.
-     * @var string
-     */
-    protected $view;
-
-    /**
      * CONSTRUCTEUR.
      *
      * @param string Nom de qualification.
@@ -67,7 +68,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function boot()
     {
-        $this->setView();
+
     }
 
     /**
@@ -143,14 +144,6 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function getView()
-    {
-        return $this->view;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function hasUri()
     {
         return !empty($this->get('uri', ''));
@@ -213,8 +206,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
             Arr::set($attrs, 'attrs.target', '_blank');
         endif;
 
-        return $this->getView()
-            ->render('page::link', $attrs);
+        return $this->view('page::link', $attrs);
     }
 
     /**
@@ -237,17 +229,20 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function setView()
+    public function view($view = null, $data = [])
     {
         if (!$this->view) :
-            return $this->view = view()
+            $this->view = view()
                 ->setDirectory(__DIR__ . '/../Resources/views')
-                ->setController(NetworkItemBaseTemplate::class)
                 ->registerFunction('isActive', [$this, 'isActive'])
                 ->addFolder('options', __DIR__ . '/../Resources/views')
                 ->addFolder('page', __DIR__ . '/../Resources/views');
         endif;
 
-        return $this->view;
+        if (func_num_args() === 0) :
+            return $this->view;
+        endif;
+
+        return $this->view->make($view, $data);
     }
 }

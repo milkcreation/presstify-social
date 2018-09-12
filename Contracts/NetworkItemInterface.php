@@ -3,7 +3,8 @@
 namespace tiFy\Plugins\Social\Contracts;
 
 use tiFy\Contracts\App\Item\AppItemInterface;
-use tiFy\Kernel\Templates\EngineInterface;
+use tiFy\Contracts\Views\ViewsInterface;
+use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
 
 interface NetworkItemInterface extends AppItemInterface
 {
@@ -57,13 +58,6 @@ interface NetworkItemInterface extends AppItemInterface
     public function getStatus();
 
     /**
-     * Récupération de la classe de rappel des gabarits d'affichage.
-     *
-     * @return EngineInterface
-     */
-    public function getView();
-
-    /**
      * Vérification de l'existance d'une url vers la page du compte du réseau.
      *
      * @return bool
@@ -94,9 +88,14 @@ interface NetworkItemInterface extends AppItemInterface
     public function pageLink($attrs = []);
 
     /**
-     * Définition de la classe de rappel des gabarits d'affichage.
+     * Instance du gestionnaire des gabarits d'affichage ou instance d'un gabarit d'affichage.
+     * {@internal Si aucun argument n'est passé  la méthode, retourne l'intance du controleur principal.}
+     * {@internal Sinon récupère le gabarit d'affichage et passe les variables en argument.}
      *
-     * @return EngineInterface
+     * @param null|string view Nom de qualification du gabarit.
+     * @param array $data Liste des variables passées en argument.
+     *
+     * @return NetworkItemViewInterface|ViewsInterface
      */
-    public function setView();
+    public function view();
 }

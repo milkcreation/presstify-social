@@ -13,7 +13,7 @@ class Options extends AbstractAppDependency
      */
     public function boot()
     {
-        $this->app->appAddAction('tify_options_register_node', [$this, 'optionsTab']);
+        add_action('tify_options_register_node', [$this, 'optionsTab']);
     }
 
     /**
@@ -46,7 +46,7 @@ class Options extends AbstractAppDependency
                             "<span class=\"tiFySocial-tabStatus tiFySocial-tabStatus--{$item->getStatus()}\">&#x25cf;</span>",
 
                         'cb'    => function () use ($item) {
-                            echo $item->getView()
+                            echo $item->view()
                                 ->render('options::admin', $item->all());
 
                         },
