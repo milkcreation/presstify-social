@@ -4,4 +4,4 @@
  */
 ?>
 
-<?php tify_partial_tag($this->all()); ?>
+<?php echo partial('tag', $this->all()); ?>
