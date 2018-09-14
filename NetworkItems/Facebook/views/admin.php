@@ -13,7 +13,8 @@
         </th>
         <td>
             <?php
-            tify_field_text(
+            echo field(
+                'text',
                 [
                     'name'  => $this->get('option_name') . '[appId]',
                     'value' => $this->get('appId', '')
@@ -28,7 +29,8 @@
         </th>
         <td>
             <?php
-            tify_field_text(
+            echo field(
+                'text',
                 [
                     'name'  => $this->get('option_name') . '[uri]',
                     'value' => $this->get('uri', ''),
