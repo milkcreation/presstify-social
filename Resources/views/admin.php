@@ -12,12 +12,10 @@
         </th>
         <td>
             <?php
-            tify_field_toggle_switch(
-                [
+            echo field('toggle-switch', [
                     'name'  => $this->get('option_name') . '[active]',
                     'value' => $this->isActive() ? 'on' : 'off'
-                ]
-            );
+                ]);
             ?>
         </td>
     </tr>
@@ -31,18 +29,17 @@
         </th>
         <td>
             <?php
-            tify_field_text(
-                [
+            echo field('text', [
                     'name'  => $this->get('option_name') . '[uri]',
                     'value' => $this->get('uri', ''),
                     'attrs' => [
                         'size'        => 80,
                         'placeholder' => __('https://[url-du-service]/[nom-de-la-page]', 'tify')
                     ]
-                ]
-            );
+                ]);
             ?>
-            <em style="display:block;font-size:0.8em;color:#AAA;"><?php _e('L\'url doit être renseignée pour que le lien s\'affiche sur votre site.', 'tify'); ?></em>
+            <em style="display:block;font-size:0.8em;color:#AAA;"><?php _e('L\'url doit être renseignée pour que le lien s\'affiche sur votre site.',
+                    'tify'); ?></em>
         </td>
     </tr>
 
@@ -52,15 +49,13 @@
         </th>
         <td>
             <?php
-            tify_field_number(
-                [
+            echo field('number', [
                     'name'  => $this->get('option_name') . '[order]',
                     'value' => $this->get('order', 0),
                     'attrs' => [
-                        'size'        => 2,
+                        'size' => 2,
                     ]
-                ]
-            );
+                ]);
             ?>
         </td>
     </tr>
