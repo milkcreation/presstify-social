@@ -25,18 +25,14 @@ class Options extends AbstractAppDependency
      */
     public function optionsTab($optionsController)
     {
-        $optionsController::registerNode(
-            [
-                'id'    => 'tiFySocial',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ]
-        );
-
         /** @var Social $social */
-        $social = $this->app->resolve(Social::class);
+        $social = app(Social::class);
+        $has_item = false;
 
         foreach($social->getItems() as $item) :
             if ($item->isAdmin()) :
+                $has_item = true;
+
                 $optionsController::registerNode(
                     [
                         'id'     => "tiFySocial-{$item->getName()}",
@@ -55,6 +51,14 @@ class Options extends AbstractAppDependency
             endif;
         endforeach;
 
-        \register_setting('tify_options', 'tify_social_share');
+        if ($has_item) :
+            $optionsController::registerNode(
+                [
+                    'id'    => 'tiFySocial',
+                    'title' => __('Réseaux sociaux', 'tify'),
+                ]
+            );
+            \register_setting('tify_options', 'tify_social_share');
+        endif;
     }
 }
