@@ -2,13 +2,11 @@
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use Illuminate\Support\Arr;
-use tiFy\App\AppInterface;
-use tiFy\Contracts\App\Item\AppItemInterface;
-use tiFy\Kernel\Templates\EngineInterface;
-use tiFy\Options\Options;
+use tiFy\Contracts\Kernel\ParametersBagInterface;
+use tiFy\Contracts\Views\ViewsInterface;
+use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
 
-interface NetworkItemInterface extends AppItemInterface
+interface NetworkItemInterface extends ParametersBagInterface
 {
     /**
      * Récupération de l'icône représentative.
@@ -32,13 +30,6 @@ interface NetworkItemInterface extends AppItemInterface
     public function getTitle();
 
     /**
-     * Récupération de la classe de rappel des gabarits d'affichage.
-     *
-     * @return EngineInterface
-     */
-    public function getView();
-
-    /**
      * Ordre d'affichage dans la liste des réseaux pris en charge.
      *
      * @return int
@@ -59,6 +50,12 @@ interface NetworkItemInterface extends AppItemInterface
      */
     public function getOptionNameKey();
 
+    /**
+     * Récupération du statut d'affichage du réseau.
+     *
+     * @return string online|warning|offline
+     */
+    public function getStatus();
 
     /**
      * Vérification de l'existance d'une url vers la page du compte du réseau.
@@ -68,20 +65,18 @@ interface NetworkItemInterface extends AppItemInterface
     public function hasUri();
 
     /**
-     * Vérification de l'activation de la prise en charge du réseau.
+     * Vérification d'activation de la prise en charge du réseau.
      *
      * @return bool
      */
     public function isActive();
 
     /**
-     * Formulaire d'administration des attributs de configuration depuis l'interface d'administration des options de presstiFy.
+     * Vérification d'activation de l'administrabilité du réseau.
      *
-     * @param Options $options Instance de la classe des options de presstiFy.
-     *
-     * @return void
+     * @return bool
      */
-    public function optionsForm($options);
+    public function isAdmin();
 
     /**
      * Lien vers la page de profil du réseau social.
@@ -93,9 +88,14 @@ interface NetworkItemInterface extends AppItemInterface
     public function pageLink($attrs = []);
 
     /**
-     * Définition de la classe de rappel des gabarits d'affichage.
+     * Instance du gestionnaire des gabarits d'affichage ou instance d'un gabarit d'affichage.
+     * {@internal Si aucun argument n'est passé  la méthode, retourne l'intance du controleur principal.}
+     * {@internal Sinon récupère le gabarit d'affichage et passe les variables en argument.}
      *
-     * @return EngineInterface
+     * @param null|string view Nom de qualification du gabarit.
+     * @param array $data Liste des variables passées en argument.
+     *
+     * @return ViewsInterface|NetworkItemViewInterface
      */
-    public function setView();
+    public function viewer();
 }
