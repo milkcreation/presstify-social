@@ -1,14 +1,14 @@
 <?php
 /**
- * @var \tiFy\Plugins\Social\Contracts\NetworkItemTemplateInterface $this
+ * @var \tiFy\Plugins\Social\Contracts\NetworkItemViewInterface $this
  */
 ?>
 
 <?php if ($items = $this->get('items', [])) : ?>
 <nav <?php echo $this->htmlAttrs($this->get('attrs', [])); ?>>
-    <ul class="tiFySocial-menuItems">
+    <ul class="Social-menuItems">
         <?php foreach($items as $item) : ?>
-        <li class="tiFySocial-menuItem"><?php echo $item->pageLink(); ?></li>
+        <li class="Social-menuItem"><?php echo $item->pageLink(); ?></li>
         <?php endforeach; ?>
     </ul>
 </nav>

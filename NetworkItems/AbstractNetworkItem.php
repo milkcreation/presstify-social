@@ -3,15 +3,37 @@
 namespace tiFy\Plugins\Social\NetworkItems;
 
 use Illuminate\Support\Arr;
-use tiFy\Contracts\App\AppInterface;
-use tiFy\App\Item\AbstractAppItemController;
-use tiFy\Kernel\Templates\EngineInterface;
-use tiFy\Kernel\Tools;
+use tiFy\Contracts\Views\ViewsInterface;
+use tiFy\Kernel\Parameters\AbstractParametersBag;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
-use tiFy\Plugins\Social\NetworkItems\NetworkItemBaseTemplate;
+use tiFy\Plugins\Social\Social;
 
-abstract class AbstractNetworkItem extends AbstractAppItemController implements NetworkItemInterface
+abstract class AbstractNetworkItem extends AbstractParametersBag implements NetworkItemInterface
 {
+    /**
+     * Liste des attributs de configuration.
+     * @var array {
+     *      @var bool $active Activation de la prise en charge.
+     *      @var bool $admin Activation de l'administrabilité.
+     *      @var string $icon Icone représentative.
+     *      @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
+     *      @var string $option_name Nom d'enregistrement des attributs en base.
+     *      @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
+     *      @var string $title Intitulé de qualification du réseau.
+     *      @var string $uri Lien vers la page du compte
+     * }
+     */
+    protected $attributes = [
+        'active'          => false,
+        'admin'           => true,
+        'icon'            => '',
+        'page_link_attrs' => [],
+        'option_name'     => '',
+        'order'           => 0,
+        'title'           => '',
+        'uri'             => ''
+    ];
+
     /**
      * Nom de qualification.
      * @var string
@@ -19,43 +41,32 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     protected $name = '';
 
     /**
-     * Liste des attributs de configuration.
-     * @var array {
-     * @var bool $active Activation de la prise en charge.
-     * @var string $icon Icone représentative.
-     * @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
-     * @var string $option_name Nom d'enregistrement des attributs en base.
-     * @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
-     * @var string $title Intitulé de qualification du réseau.
-     * @var string $uri Lien vers la page du compte
-     * }
+     * Instance du controleur principal.
+     * @var Social
      */
-    protected $attributes = [
-        'active'          => false,
-        'icon'            => '',
-        'page_link_attrs' => [],
-        'option_name'     => '',
-        'order'           => 0,
-        'title'           => '',
-        'uri'             => '',
-    ];
+    protected $social;
 
     /**
-     * Classe de rappel des gabarits d'affichage.
-     * @var string
+     * Instance du gestionnaire de gabarits d'affichage.
+     * @var ViewsInterface
      */
-    protected $view;
+    protected $viewer;
 
     /**
      * CONSTRUCTEUR.
      *
+     * @param string Nom de qualification.
+     * @param array $attrs Attributs de configuration.
+     * @param Social $social Instance du controleur principal.
+     *
      * @return void
      */
-    public function __construct($name, $attrs = [], AppInterface $app)
+    public function __construct($name, $attrs = [], Social $social)
     {
         $this->name = $name;
+        $this->social = $social;
 
-        parent::__construct($attrs, $app);
+        parent::__construct($attrs);
     }
 
     /**
@@ -63,8 +74,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function boot()
     {
-        $this->setView();
-        $this->app->appAddAction('tify_options_register', [$this, 'optionsForm']);
+
     }
 
     /**
@@ -86,7 +96,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function getIcon()
     {
-        return Tools::File()->svgGetContents(class_info($this)->getDirname() . '/icon.svg') ? : '';
+        return $this->get('icon') ? : $this->social->getNetworkIcon($this->getName());
     }
 
     /**
@@ -116,14 +126,6 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function getView()
-    {
-        return $this->view;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getOptionName()
     {
         return "tify_social_share[{$this->getOptionNameKey()}]";
@@ -142,7 +144,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
      */
     public function getStatus()
     {
-        return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' :'offline');
+        return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' : 'offline');
     }
 
     /**
@@ -166,23 +168,9 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function optionsForm($options)
+    public function isAdmin()
     {
-        $options->register(
-            [
-                'name'    => "tiFySocial-{$this->getName()}",
-                'parent'  => 'tiFySocial',
-                'title'   => "<span class=\"tiFySocial-tabIcon\">{$this->getIcon()}</span>" .
-                    "<span class=\"tiFySocial-tabTitle\">{$this->getTitle()}</span>" .
-                    "<span class=\"tiFySocial-tabStatus tiFySocial-tabStatus--{$this->getStatus()}\">&#x25cf;</span>",
-
-                'content' => function () {
-                    return $this->getView()
-                        ->render('options::admin', $this->all());
-
-                },
-            ]
-        );
+        return $this->get('admin', true);
     }
 
     /**
@@ -191,7 +179,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     public function pageLink($attrs = [])
     {
         if (!$this->isActive() || (!$uri = $this->get('uri', ''))) :
-            return;
+            return '';
         endif;
 
         $attrs = array_merge(
@@ -213,7 +201,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
         Arr::set($attrs, 'attrs.href', $this->get('uri', ''));
 
         if (!Arr::has($attrs, 'attrs.class')) :
-            Arr::set($attrs, 'attrs.class', 'tiFySocial-link tiFySocial-link--' . $this->getName());
+            Arr::set($attrs, 'attrs.class', 'Social-link Social-link--' . $this->getName());
         endif;
 
         if (!Arr::has($attrs, 'attrs.title')) :
@@ -224,8 +212,7 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
             Arr::set($attrs, 'attrs.target', '_blank');
         endif;
 
-        return $this->getView()
-            ->render('page::link', $attrs);
+        return $this->viewer('link', $attrs);
     }
 
     /**
@@ -248,17 +235,26 @@ abstract class AbstractNetworkItem extends AbstractAppItemController implements 
     /**
      * {@inheritdoc}
      */
-    public function setView()
+    public function viewer($view = null, $data = [])
     {
-        if (!$this->view) :
-            return $this->view = view()
-                ->setDirectory(__DIR__ . '/../Resources/views')
-                ->setController(NetworkItemBaseTemplate::class)
-                ->registerFunction('isActive', [$this, 'isActive'])
-                ->addFolder('options', __DIR__ . '/../Resources/views')
-                ->addFolder('page', __DIR__ . '/../Resources/views');
+        if (!$this->viewer) :
+            $cinfo = class_info($this);
+            $default_dir = $cinfo->getDirname() . '/../../Resources/views';
+            $this->viewer = view()
+                ->setDirectory(is_dir($default_dir) ? $default_dir : null)
+                ->setController(NetworkItemView::class)
+                ->setOverrideDir(
+                    (($override_dir = $this->get('viewer.override_dir')) && is_dir($override_dir))
+                        ? $override_dir
+                        : (is_dir($default_dir) ? $default_dir : $cinfo->getDirname())
+                )
+                ->set('item', $this);
         endif;
 
-        return $this->view;
+        if (func_num_args() === 0) :
+            return $this->viewer;
+        endif;
+
+        return $this->viewer->make("_override::{$view}", $data);
     }
 }
