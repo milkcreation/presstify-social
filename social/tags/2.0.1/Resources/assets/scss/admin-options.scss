@@ -1,0 +1,51 @@
+.tiFySocial-tabIcon {
+    position: relative;
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 16px;
+    line-height: 16px;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+}
+
+.tiFySocial-tabIcon > svg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    fill: #0073AA;
+}
+
+.nav-tabs > li > a:hover .tiFySocial-tabIcon > svg {
+    fill: #00A0D2;
+}
+
+.nav-tabs > li.active > a .tiFySocial-tabIcon > svg,
+.nav-tabs > li.active > a:focus .tiFySocial-tabIcon > svg {
+    fill: #555;
+}
+
+.tiFySocial-tabTitle {
+    vertical-align: middle;
+}
+
+.tiFySocial-tabStatus {
+    margin-left: 3px;
+    line-height:1;
+    vertical-align: middle;
+}
+
+.tiFySocial-tabStatus--online {
+    color: #16a085;
+}
+
+.tiFySocial-tabStatus--offline {
+    color: #c0392b;
+}
+
+.tiFySocial-tabStatus--warning {
+    color: #f39c12;
+}
+
