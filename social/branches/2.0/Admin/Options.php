@@ -44,6 +44,7 @@ class Options
                 [
                     'name'  => 'Social',
                     'title' => __('Réseaux sociaux', 'tify'),
+                    'position' => 99
                 ]
             );
 
