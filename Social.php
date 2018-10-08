@@ -6,7 +6,7 @@
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 2.0.2
+ * @version 2.0.3
  */
 
 namespace tiFy\Plugins\Social;
@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use tiFy\App\Dependency\AbstractAppDependency;
 use tiFy\Kernel\Tools;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
+use tiFy\Plugins\Social\SocialResolverTrait;
 
 /**
  * Class Social
@@ -48,6 +49,8 @@ use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
  */
 class Social
 {
+    use SocialResolverTrait;
+
     /**
      * CONSTRUCTEUR.
      *
@@ -136,34 +139,30 @@ class Social
      */
     public function getNetworkIcon($name)
     {
-        return Tools::File()->svgGetContents(
-            class_info($this)->getDirname() . "/Resources/assets/networks/{$name}/img/icon.svg"
-        )
+        return Tools::File()->svgGetContents(__DIR__ . "/Resources/assets/networks/{$name}/img/icon.svg")
             ? : '';
     }
 
     /**
      * Affichage d'un menu de la liste des liens vers la page des comptes des réseaux.
      *
-     * @param array $args
+     * @param array $attrs Liste des attributs de configuration.
+     *
      * @return string
      */
-    public function menuRender($args = [])
+    public function menuRender($attrs = [])
     {
         Arr::set(
-            $args,
+            $attrs,
             'attrs.class',
             sprintf(
-                Arr::get($args, 'attrs.class', '%s'), 'Social-menu'
+                Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
             )
         );
 
-        $args['items'] = $this->getItems();
+        $attrs['items'] = $this->getMenuItems();
 
-        return view()
-            ->setDirectory(__DIR__ . '/Resources/views')
-            ->addFolder('menu', __DIR__ . '/Resources/views')
-            ->make('list', $args);
+        return $this->viewer('menu', $attrs);
     }
 
     /**
