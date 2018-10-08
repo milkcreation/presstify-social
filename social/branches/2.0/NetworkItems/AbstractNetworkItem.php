@@ -212,7 +212,7 @@ abstract class AbstractNetworkItem extends AbstractParametersBag implements Netw
             Arr::set($attrs, 'attrs.target', '_blank');
         endif;
 
-        return $this->viewer('link', $attrs);
+        return $this->viewer('page-link', $attrs);
     }
 
     /**

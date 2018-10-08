@@ -1,5 +1,7 @@
 <?php
 /**
+ * Social - Menu d'affichage des liens vers la page des comptes des réseaux actifs.
+ * ---------------------------------------------------------------------------------------------------------------------
  * @var \tiFy\Plugins\Social\Contracts\NetworkItemViewInterface $this
  */
 ?>
