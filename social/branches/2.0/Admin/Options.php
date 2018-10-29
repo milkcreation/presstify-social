@@ -3,7 +3,7 @@
 namespace tiFy\Plugins\Social\Admin;
 
 use tiFy\App\Dependency\AbstractAppDependency;
-use tiFy\Metabox\Metabox;
+use tiFy\Contracts\Metabox\MetaboxManager;
 use tiFy\Plugins\Social\Admin\Metabox\Options\NetworkOptions\NetworkOptions;
 use tiFy\Plugins\Social\Social;
 
@@ -18,8 +18,8 @@ class Options
      */
     public function __construct(Social $social)
     {
-        /** @var Metabox $metabox */
-        $metabox = resolve(Metabox::class);
+        /** @var MetaboxManager $metabox */
+        $metabox = resolve('metabox');
         $has_item = false;
 
         foreach ($social->getItems() as $item) :
@@ -27,9 +27,9 @@ class Options
                 $has_item = true;
 
                 $metabox->add(
+                    "Social-{$item->getName()}",
                     'tify_options@options',
                     [
-                        'name'    => "Social-{$item->getName()}",
                         'parent'  => 'Social',
                         'content' => NetworkOptions::class,
                         'args'    => ['network' => $item]
@@ -40,9 +40,9 @@ class Options
 
         if ($has_item) :
             $metabox->add(
+                'Social',
                 'tify_options@options',
                 [
-                    'name'  => 'Social',
                     'title' => __('Réseaux sociaux', 'tify'),
                     'position' => 99
                 ]
