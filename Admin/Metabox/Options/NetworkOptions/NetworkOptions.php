@@ -2,10 +2,10 @@
 
 namespace tiFy\Plugins\Social\Admin\Metabox\Options\NetworkOptions;
 
-use tiFy\Metabox\AbstractMetaboxDisplayOptionsController;
+use tiFy\Metabox\MetaboxWpOptionsController;
 use tiFy\Plugins\Social\NetworkItems\NetworkItemView;
 
-class NetworkOptions extends AbstractMetaboxDisplayOptionsController
+class NetworkOptions extends MetaboxWpOptionsController
 {
     /**
      * {@inheritdoc}
