@@ -2,80 +2,182 @@
 
 /**
  * @name Social
- * @desc Gestion des réseaux sociaux
+ * @desc Gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package presstify-plugins/social
  * @namespace \tiFy\Plugins\Social
- * @version 1.4.1
+ * @version 2.0.5
  */
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\Core\Options\Options;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use tiFy\App\Dependency\AbstractAppDependency;
+use tiFy\Kernel\Tools;
+use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
+use tiFy\Plugins\Social\SocialResolverTrait;
 
-class Social extends \tiFy\App\Plugin
+/**
+ * Class Social
+ * @package tiFy\Plugins\Social
+ *
+ * Activation :
+ * ----------------------------------------------------------------------------------------------------
+ * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services
+ *     chargés automatiquement par l'application.
+ * ex.
+ * <?php
+ * ...
+ * use tiFy\Plugins\Social\SocialServiceProvider;
+ * ...
+ *
+ * return [
+ *      ...
+ *      'providers' => [
+ *          ...
+ *          SocialServiceProvider::class
+ *          ...
+ *      ]
+ * ];
+ *
+ * Configuration :
+ * ----------------------------------------------------------------------------------------------------
+ * Dans le dossier de config, créer le fichier social.php
+ * @see /vendor/presstify-plugins/social/Resources/config/social.php Exemple de configuration
+ */
+class Social
 {
-    /**
-     * Liste des options
-     * @var array
-     */
-    public static $Options = [];
+    use SocialResolverTrait;
 
     /**
-     * CONSTRUCTEUR
+     * CONSTRUCTEUR.
      *
      * @return void
      */
     public function __construct()
     {
-        parent::__construct();
+        add_action(
+            'admin_enqueue_scripts',
+            function () {
+                field('toggle-switch')->enqueue_scripts();
 
-        // Récupération des options enregistrées
-        self::$Options = get_option('tify_social_share', []);
+                wp_register_style(
+                    'Social-adminOptions',
+                    class_info($this)->getUrl() . '/Resources/assets/css/admin-options.css',
+                    [],
+                    180822,
+                    'screen'
+                );
 
-        // Chargement des réseaux
-        foreach ((array)self::tFyAppConfig('Networks') as $name => $attrs) :
-            $classname = "tiFy\\Plugins\\Social\\Networks\\" . ucfirst($name) . "\\" . ucfirst($name);
-
-            // Bypass - Le réseau n'existe pas
-            if (!class_exists($classname)) {
-                continue;
-            }
-            self::tFyAppShareContainer($classname, new $classname($attrs));
-        endforeach;
-
-        // Déclaration des événements
-        $this->appAddAction('admin_enqueue_scripts');
-        $this->appAddAction('tify_options_register_node');
+                if (
+                    (get_current_screen()->id === 'settings_page_tify_options') &&
+                    config('social.admin_enqueue_scripts', true)
+                ) :
+                    wp_enqueue_style('Social-adminOptions');
+                endif;
+            });
     }
 
     /**
-     * EVENEMENTS
-     */
-    /**
-     * Mise en file des scripts de l'interface d'administration
+     * Récupération du nom de la classe d'un controleur de réseau.
      *
-     * @return void
+     * @return string
      */
-    public function admin_enqueue_scripts()
+    public function getAbstract($alias)
     {
-        \wp_enqueue_style('font-awesome');
+        $name = Str::studly($alias);
+        $abstract = "tiFy\\Plugins\\Social\\NetworkItems\\{$name}\\{$name}";
+
+        if (class_exists($abstract)) :
+            return $abstract;
+        endif;
+
+        return '';
     }
 
     /**
-     * Déclaration de la boîte à onglets d'administration des options des réseaux sociaux déclarés
+     * Récupération de la liste des réseaux déclarés.
      *
-     * @return void
+     * @return NetworkItemInterface[]
      */
-    public function tify_options_register_node()
+    public function getItems()
     {
-        Options::registerNode(
-            [
-                'id'    => 'tiFyPlugins-socialNetworks',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ]
+        /** @var SocialServiceProvider $serviceProvider */
+        $serviceProvider = resolve(SocialServiceProvider::class);
+
+        return $serviceProvider->getNetworkItems();
+    }
+
+    /**
+     * Récupération de la liste des réseaux pris en charge affichable dans le menu par ordre d'affichage.
+     * {@internal le réseaux doit être actif, son url renseignée. La liste est triée par ordre d'affichage.}
+     *
+     * @return NetworkItemInterface[]
+     */
+    public function getMenuItems()
+    {
+        return (new Collection($this->getItems()))
+            ->filter(function ($item) {
+                /** @var NetworkItemInterface $item */
+                return ($item->isActive() === true) && ($item->hasUri() === true);
+            })
+            ->sortBy(function ($item) {
+                /** @var NetworkItemInterface $item */
+                return $item->getOrder();
+            })
+            ->all();
+    }
+
+    /**
+     * Récupération de l'icône d'un réseau.
+     *
+     * @param string $name Nom de qualification du réseau
+     *
+     * @return string
+     */
+    public function getNetworkIcon($name)
+    {
+        return Tools::File()->svgGetContents(__DIR__ . "/Resources/assets/networks/{$name}/img/icon.svg")
+            ? : '';
+    }
+
+    /**
+     * Affichage d'un menu de la liste des liens vers la page des comptes des réseaux.
+     *
+     * @param array $attrs Liste des attributs de configuration.
+     *
+     * @return string
+     */
+    public function menuRender($attrs = [])
+    {
+        Arr::set(
+            $attrs,
+            'attrs.class',
+            sprintf(
+                Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
+            )
         );
 
-        \register_setting('tify_options', 'tify_social_share');
+        $attrs['items'] = $this->getMenuItems();
+
+        return $this->viewer('menu', $attrs);
+    }
+
+    /**
+     * Affichage d'un lien vers la page du compte d'un réseau.
+     *
+     * @param string $alias Nom de qualification du réseau.
+     * @param array $attrs Liste des attributs de configuration personnalisé.
+     *
+     * @return string
+     */
+    public function pageLinkRender($alias, $attrs = [])
+    {
+        /** @var NetworkItemInterface $networkItem */
+        $networkItem = container($this->getAbstract($alias));
+
+        return $networkItem->pageLink($attrs);
     }
 }
