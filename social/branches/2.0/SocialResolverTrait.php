@@ -2,14 +2,14 @@
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\Contracts\Views\ViewInterface;
-use tiFy\Contracts\Views\ViewsInterface;
+use tiFy\Contracts\View\ViewController;
+use tiFy\Contracts\View\ViewEngine;
 
 trait SocialResolverTrait
 {
     /**
      * Instance du gestionnaire de gabarits d'affichage.
-     * @var ViewsInterface
+     * @var ViewEngine
      */
     protected $viewer;
 
@@ -21,7 +21,7 @@ trait SocialResolverTrait
      * @param null|string view Nom de qualification du gabarit.
      * @param array $data Liste des variables passées en argument.
      *
-     * @return ViewsInterface|ViewInterface
+     * @return ViewController|ViewEngine
      */
     public function viewer($view = null, $data = [])
     {

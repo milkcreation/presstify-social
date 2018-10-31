@@ -2,7 +2,7 @@
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use tiFy\Contracts\Views\ViewInterface;
+use tiFy\Contracts\View\ViewController;
 
 /**
  * Interface NetworkItemViewInterface
@@ -10,7 +10,7 @@ use tiFy\Contracts\Views\ViewInterface;
  *
  * @method bool isActive()
  */
-interface NetworkItemViewInterface extends ViewInterface
+interface NetworkItemViewInterface extends ViewController
 {
 
 }
