@@ -2,11 +2,11 @@
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use tiFy\Contracts\Kernel\ParametersBagInterface;
-use tiFy\Contracts\Views\ViewsInterface;
+use tiFy\Contracts\Kernel\ParamsBag;
+use tiFy\Contracts\View\ViewEngine;
 use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
 
-interface NetworkItemInterface extends ParametersBagInterface
+interface NetworkItemInterface extends ParamsBag
 {
     /**
      * Récupération de l'icône représentative.
@@ -95,7 +95,7 @@ interface NetworkItemInterface extends ParametersBagInterface
      * @param null|string view Nom de qualification du gabarit.
      * @param array $data Liste des variables passées en argument.
      *
-     * @return ViewsInterface|NetworkItemViewInterface
+     * @return NetworkItemViewInterface|ViewEngine
      */
     public function viewer();
 }

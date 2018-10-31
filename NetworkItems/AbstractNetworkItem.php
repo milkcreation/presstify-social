@@ -3,12 +3,12 @@
 namespace tiFy\Plugins\Social\NetworkItems;
 
 use Illuminate\Support\Arr;
-use tiFy\Contracts\Views\ViewsInterface;
-use tiFy\Kernel\Parameters\AbstractParametersBag;
+use tiFy\Contracts\View\ViewEngine;
+use tiFy\Kernel\Params\ParamsBag;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 use tiFy\Plugins\Social\Social;
 
-abstract class AbstractNetworkItem extends AbstractParametersBag implements NetworkItemInterface
+abstract class AbstractNetworkItem extends ParamsBag implements NetworkItemInterface
 {
     /**
      * Liste des attributs de configuration.
@@ -48,7 +48,7 @@ abstract class AbstractNetworkItem extends AbstractParametersBag implements Netw
 
     /**
      * Instance du gestionnaire de gabarits d'affichage.
-     * @var ViewsInterface
+     * @var ViewEngine
      */
     protected $viewer;
 
