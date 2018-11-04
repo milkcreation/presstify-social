@@ -2,9 +2,9 @@
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\Kernel\Templates\TemplateController;
+use tiFy\View\ViewController;
 
-class SocialView extends TemplateController
+class SocialView extends ViewController
 {
 
 }

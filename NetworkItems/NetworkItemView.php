@@ -2,7 +2,7 @@
 
 namespace tiFy\Plugins\Social\NetworkItems;
 
-use tiFy\Kernel\Templates\TemplateController;
+use tiFy\View\ViewController;
 use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
 
 /**
@@ -14,7 +14,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
  * @method bool getTitle()
  * @method bool isActive()
  */
-class NetworkItemView extends TemplateController implements NetworkItemViewInterface
+class NetworkItemView extends ViewController implements NetworkItemViewInterface
 {
     /**
      * Liste des méthodes héritées.
