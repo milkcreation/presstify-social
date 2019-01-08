@@ -1,0 +1,44 @@
+{
+  "name": "presstify-plugins/social",
+  "description": "Gestion des réseaux sociaux.",
+  "type": "presstify-plugin",
+  "keywords": [
+    "presstify",
+    "plugins",
+    "wordpress",
+    "social"
+  ],
+  "homepage": "https://svn.tigreblanc.fr/presstify-plugins/social",
+  "time": "2019-01-08",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy.manner@milkcreation.fr",
+      "role": "Developper"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "http://composer.tigreblanc.fr/presstify/"
+    }
+  ],
+  "require": {
+    "composer/installers": "~1.0",
+    "presstify/framework": "1.2.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "tiFy\\Plugins\\Social\\": ""
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config" : {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "secure-http": false,
+    "sort-packages": true
+  }
+}
