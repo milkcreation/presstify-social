@@ -3,7 +3,7 @@
  Plugin Name: Social Share
  Plugin URI: http://presstify.com/plugins/social-share
  Description: Partage sur les réseaux sociaux
- Version: 1.1.385
+ Version: 1.2.0
  Author: Milkcreation
  Author URI: http://milkcreation.fr
  Text Domain: tify
