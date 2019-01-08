@@ -1,13 +1,13 @@
 <?php
-
-/**
- * @name Social
- * @desc Gestion des réseaux sociaux
- * @author Jordy Manner <jordy@milkcreation.fr>
- * @package presstify-plugins/social
- * @namespace \tiFy\Plugins\Social
- * @version 1.4.1
- */
+/*
+ Plugin Name: Social Share
+ Plugin URI: http://presstify.com/plugins/social-share
+ Description: Partage sur les réseaux sociaux
+ Version: 1.0.0
+ Author: Milkcreation
+ Author URI: http://milkcreation.fr
+ Text Domain: tify
+*/
 
 namespace tiFy\Plugins\Social;
 
