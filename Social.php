@@ -1,32 +1,25 @@
 <?php
 
-/**
- * @name Social
- * @desc Gestion des réseaux sociaux.
- * @author Jordy Manner <jordy@milkcreation.fr>
- * @package presstify-plugins/social
- * @namespace \tiFy\Plugins\Social
- * @version 2.0.7
- */
-
 namespace tiFy\Plugins\Social;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use tiFy\App\Dependency\AbstractAppDependency;
 use tiFy\Kernel\Tools;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
-use tiFy\Plugins\Social\SocialResolverTrait;
 
 /**
  * Class Social
- * @package tiFy\Plugins\Social
  *
- * Activation :
- * ----------------------------------------------------------------------------------------------------
- * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services
- *     chargés automatiquement par l'application.
+ * @desc Extension PresstiFy de gestion des réseaux sociaux.
+ * @author Jordy Manner <jordy@milkcreation.fr>
+ * @package tiFy\Plugins\Social
+ * @version 2.0.8
+ *
+ * USAGE :
+ * Activation
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services.
  * ex.
  * <?php
  * ...
@@ -42,10 +35,10 @@ use tiFy\Plugins\Social\SocialResolverTrait;
  *      ]
  * ];
  *
- * Configuration :
- * ----------------------------------------------------------------------------------------------------
+ * Configuration
+ * ---------------------------------------------------------------------------------------------------------------------
  * Dans le dossier de config, créer le fichier social.php
- * @see /vendor/presstify-plugins/social/Resources/config/social.php Exemple de configuration
+ * @see /vendor/presstify-plugins/social/Resources/config/social.php
  */
 class Social
 {
@@ -82,6 +75,8 @@ class Social
 
     /**
      * Récupération du nom de la classe d'un controleur de réseau.
+     *
+     * @param string $alias
      *
      * @return string
      */

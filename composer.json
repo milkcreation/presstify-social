@@ -1,6 +1,6 @@
 {
   "name": "presstify-plugins/social",
-  "description": "Gestion des réseaux sociaux.",
+  "description": "Extension PresstiFy de gestion des réseaux sociaux.",
   "type": "presstify-plugin",
   "keywords": [
     "presstify",
@@ -9,7 +9,7 @@
     "social"
   ],
   "homepage": "https://svn.tigreblanc.fr/presstify-plugins/social",
-  "time": "2018-12-31",
+  "time": "2019-01-12",
   "license": "proprietary",
   "authors": [
     {
@@ -26,7 +26,7 @@
   ],
   "require": {
     "composer/installers": "~1.0",
-    "presstify/framework": ">=1.4"
+    "presstify/framework": "2.0.*"
   },
   "autoload": {
     "files": [
