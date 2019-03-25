@@ -19,7 +19,7 @@ class Options
     public function __construct(Social $social)
     {
         /** @var MetaboxManager $metabox */
-        $metabox = resolve('metabox');
+        $metabox = app('metabox');
         $has_item = false;
 
         foreach ($social->getItems() as $item) :

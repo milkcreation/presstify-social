@@ -14,7 +14,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.8
+ * @version 2.0.9
  *
  * USAGE :
  * Activation
