@@ -14,7 +14,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.9
+ * @version 2.0.10
  *
  * USAGE :
  * Activation
@@ -51,9 +51,7 @@ class Social
      */
     public function __construct()
     {
-        add_action(
-            'admin_enqueue_scripts',
-            function () {
+        add_action('admin_enqueue_scripts', function () {
                 field('toggle-switch')->enqueue_scripts();
 
                 wp_register_style(

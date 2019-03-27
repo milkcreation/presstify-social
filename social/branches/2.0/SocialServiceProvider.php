@@ -3,7 +3,6 @@
 namespace tiFy\Plugins\Social;
 
 use tiFy\App\Container\AppServiceProvider;
-use tiFy\Plugins\Social\Social;
 use tiFy\Plugins\Social\Admin\Options;
 use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
 
