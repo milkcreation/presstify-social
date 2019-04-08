@@ -2,11 +2,13 @@
 
 namespace tiFy\Plugins\Social;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use Psr\Container\ContainerInterface;
+use tiFy\Contracts\View\ViewEngine;
 use tiFy\Kernel\Tools;
-use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
+use tiFy\Support\Collection;
+use tiFy\Plugins\Social\Contracts\NetworkFactory;
+use tiFy\Plugins\Social\Contracts\Social as SocialContract;
 
 /**
  * Class Social
@@ -14,7 +16,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.10
+ * @version 2.0.11
  *
  * USAGE :
  * Activation
@@ -40,118 +42,75 @@ use tiFy\Plugins\Social\Contracts\NetworkItemInterface;
  * Dans le dossier de config, créer le fichier social.php
  * @see /vendor/presstify-plugins/social/Resources/config/social.php
  */
-class Social
+class Social extends Collection implements SocialContract
 {
-    use SocialResolverTrait;
+    /**
+     * Instance du conteneur d'injection de dépendances.
+     * @var ContainerInterface
+     */
+    protected $container;
 
     /**
      * CONSTRUCTEUR.
      *
+     * @param ContainerInterface $container Instance du conteneur d'injection de dépendances.
+     *
      * @return void
      */
-    public function __construct()
+    public function __construct(ContainerInterface $container)
     {
+        $this->container = $container;
+
         add_action('admin_enqueue_scripts', function () {
-                field('toggle-switch')->enqueue_scripts();
+            field('toggle-switch')->enqueue_scripts();
 
-                wp_register_style(
-                    'Social-adminOptions',
-                    class_info($this)->getUrl() . '/Resources/assets/css/admin-options.css',
-                    [],
-                    180822,
-                    'screen'
-                );
+            wp_register_style(
+                'Social-adminOptions',
+                class_info($this)->getUrl() . '/Resources/assets/css/admin-options.css',
+                [],
+                180822,
+                'screen'
+            );
 
-                if (
-                    (get_current_screen()->id === 'settings_page_tify_options') &&
-                    config('social.admin_enqueue_scripts', true)
-                ) :
-                    wp_enqueue_style('Social-adminOptions');
-                endif;
+            if (
+                (get_current_screen()->id === 'settings_page_tify_options') &&
+                config('social.admin_enqueue_scripts', true)
+            ) {
+                wp_enqueue_style('Social-adminOptions');
+            }
+        });
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMenuItems()
+    {
+        return $this->collect()
+            ->filter(function (NetworkFactory $item) {
+                return ($item->isActive() === true) && ($item->hasUri() === true);
+            })
+            ->sortBy(function (NetworkFactory $item) {
+                return $item->getOrder();
             });
     }
 
     /**
-     * Récupération du nom de la classe d'un controleur de réseau.
-     *
-     * @param string $alias
-     *
-     * @return string
-     */
-    public function getAbstract($alias)
-    {
-        $name = Str::studly($alias);
-        $abstract = "tiFy\\Plugins\\Social\\NetworkItems\\{$name}\\{$name}";
-
-        if (class_exists($abstract)) :
-            return $abstract;
-        endif;
-
-        return '';
-    }
-
-    /**
-     * Récupération de la liste des réseaux déclarés.
-     *
-     * @return NetworkItemInterface[]
-     */
-    public function getItems()
-    {
-        /** @var SocialServiceProvider $serviceProvider */
-        $serviceProvider = resolve(SocialServiceProvider::class);
-
-        return $serviceProvider->getNetworkItems();
-    }
-
-    /**
-     * Récupération de la liste des réseaux pris en charge affichable dans le menu par ordre d'affichage.
-     * {@internal le réseaux doit être actif, son url renseignée. La liste est triée par ordre d'affichage.}
-     *
-     * @return NetworkItemInterface[]
-     */
-    public function getMenuItems()
-    {
-        return (new Collection($this->getItems()))
-            ->filter(function ($item) {
-                /** @var NetworkItemInterface $item */
-                return ($item->isActive() === true) && ($item->hasUri() === true);
-            })
-            ->sortBy(function ($item) {
-                /** @var NetworkItemInterface $item */
-                return $item->getOrder();
-            })
-            ->all();
-    }
-
-    /**
-     * Récupération de l'icône d'un réseau.
-     *
-     * @param string $name Nom de qualification du réseau
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getNetworkIcon($name)
     {
-        return Tools::File()->svgGetContents(__DIR__ . "/Resources/assets/networks/{$name}/img/icon.svg")
-            ? : '';
+        return Tools::File()->svgGetContents(__DIR__ . "/Resources/assets/networks/{$name}/img/icon.svg") ? : '';
     }
 
     /**
-     * Affichage d'un menu de la liste des liens vers la page des comptes des réseaux.
-     *
-     * @param array $attrs Liste des attributs de configuration.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function menuRender($attrs = [])
     {
-        Arr::set(
-            $attrs,
-            'attrs.class',
-            sprintf(
-                Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
-            )
-        );
+        Arr::set($attrs, 'attrs.class', sprintf(
+            Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
+        ));
 
         $attrs['items'] = $this->getMenuItems();
 
@@ -159,18 +118,43 @@ class Social
     }
 
     /**
-     * Affichage d'un lien vers la page du compte d'un réseau.
-     *
-     * @param string $alias Nom de qualification du réseau.
-     * @param array $attrs Liste des attributs de configuration personnalisé.
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function pageLinkRender($alias, $attrs = [])
+    public function pageLinkRender($network, $attrs = [])
     {
-        /** @var NetworkItemInterface $networkItem */
-        $networkItem = container($this->getAbstract($alias));
+        return $this->resolve("networks.factory.{$network}")->pageLink($attrs);
+    }
 
-        return $networkItem->pageLink($attrs);
+    /**
+     * @inheritdoc
+     */
+    public function resolve($alias, ...$args)
+    {
+        return $this->container->get("social.{$alias}", $args);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function viewer($view = null, $data = [])
+    {
+        /** @var ViewEngine $viewer */
+        $viewer = $this->resolve('viewer');
+
+        if (func_num_args() === 0) {
+            return $viewer;
+        }
+
+        return $viewer->make("_override::{$view}", $data);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function walk($item, $key = null)
+    {
+        if ($item instanceof NetworkFactory) {
+            $this->items[$key] = $item;
+        }
     }
 }

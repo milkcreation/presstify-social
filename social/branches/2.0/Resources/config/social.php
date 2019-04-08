@@ -1,9 +1,6 @@
 <?php
 
-/**
- * Exemple de configuration.
- */
-
+/** Exemple de configuration. */
 return [
     /**
      * Mise en file automatique des scripts de l'interface d'administration.
@@ -15,7 +12,7 @@ return [
      * Attributs de configuration des réseaux sociaux.
      * @var array
      */
-    'networks' => [
+    'networks'              => [
         'dailymotion',
         'facebook',
         'google-plus',

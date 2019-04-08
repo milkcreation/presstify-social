@@ -5,12 +5,15 @@ namespace tiFy\Plugins\Social\Contracts;
 use tiFy\Contracts\View\ViewController;
 
 /**
- * Interface NetworkItemViewInterface
+ * Interface NetworkViewer
  * @package tiFy\Plugins\Social\Contracts
  *
+ * @method string getIcon()
+ * @method string getStatus()
+ * @method bool getTitle()
  * @method bool isActive()
  */
-interface NetworkItemViewInterface extends ViewController
+interface NetworkViewer extends ViewController
 {
 
 }

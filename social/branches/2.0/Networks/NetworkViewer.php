@@ -1,9 +1,9 @@
 <?php
 
-namespace tiFy\Plugins\Social\NetworkItems;
+namespace tiFy\Plugins\Social\Networks;
 
 use tiFy\View\ViewController;
-use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
+use tiFy\Plugins\Social\Contracts\NetworkViewer as NetworkViewerContract;
 
 /**
  * Class NetworkItemBaseTemplate
@@ -14,7 +14,7 @@ use tiFy\Plugins\Social\Contracts\NetworkItemViewInterface;
  * @method bool getTitle()
  * @method bool isActive()
  */
-class NetworkItemView extends ViewController implements NetworkItemViewInterface
+class NetworkViewer extends ViewController implements NetworkViewerContract
 {
     /**
      * Liste des méthodes héritées.
@@ -28,7 +28,7 @@ class NetworkItemView extends ViewController implements NetworkItemViewInterface
     ];
 
     /**
-     * Translation d'appel des méthodes de l'application associée.
+     * Délégation d'appel des méthodes du réseau associé.
      *
      * @param string $name Nom de la méthode à appeler.
      * @param array $arguments Liste des variables passées en argument.
@@ -37,11 +37,12 @@ class NetworkItemView extends ViewController implements NetworkItemViewInterface
      */
     public function __call($name, $arguments)
     {
-        if (in_array($name, $this->mixins)) :
+        if (in_array($name, $this->mixins)) {
             return call_user_func_array(
-                [$this->engine->get('item'), $name],
+                [$this->engine->get('network'), $name],
                 $arguments
             );
-        endif;
+        }
+        return null;
     }
 }

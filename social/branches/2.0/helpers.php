@@ -2,7 +2,19 @@
 
 use tiFy\Plugins\Social\Social;
 
-if (!function_exists('social_menu')) :
+if (!function_exists('social')) {
+    /**
+     * Récupération de l'instance du controleur de plugin social.
+     *
+     * @return Social
+     */
+    function social(): Social
+    {
+        return app('social');
+    }
+}
+
+if (!function_exists('social_menu')) {
     /**
      * Affichage de la liste des liens vers les pages des réseaux pris en charge et actifs.
      * {@internal un réseau est considéré actif lorsque la prise en charge est activé
@@ -14,14 +26,11 @@ if (!function_exists('social_menu')) :
      */
     function social_menu($attrs = [])
     {
-        /** @var Social $social */
-        $social = resolve(Social::class);
-
-        return $social->menuRender($attrs);
+        return social()->menuRender($attrs);
     }
-endif;
+}
 
-if (!function_exists('social_page_link')) :
+if (!function_exists('social_page_link')) {
     /**
      * Affichage d'un lien vers la page d'un réseau pris en charge et actifs.
      * {@internal un réseau est considéré actif lorsque la prise en charge est activé
@@ -32,11 +41,8 @@ if (!function_exists('social_page_link')) :
      *
      * @return string
      */
-    function social_page_link($name, $args = [])
+    function social_page_link($name, $attrs = [])
     {
-        /** @var Social $social */
-        $social = resolve(Social::class);
-
-        return $social->pageLinkRender($name, $attrs = []);
+        return social()->pageLinkRender($name, $attrs);
     }
-endif;
+}
