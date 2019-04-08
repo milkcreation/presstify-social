@@ -1,9 +1,8 @@
 <?php
 /**
- * @var tiFy\Contracts\View\ViewController $this
+ * @var tiFy\Plugins\Social\Contracts\NetworkViewer $this
  */
 ?>
-
 <table class="form-table">
     <tbody>
     <tr>

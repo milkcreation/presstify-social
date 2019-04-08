@@ -3,39 +3,33 @@
 namespace tiFy\Plugins\Social\Admin\Metabox\Options\NetworkOptions;
 
 use tiFy\Metabox\MetaboxWpOptionsController;
-use tiFy\Plugins\Social\NetworkItems\NetworkItemView;
+use tiFy\Plugins\Social\Networks\NetworkViewer;
 
 class NetworkOptions extends MetaboxWpOptionsController
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function boot()
     {
         $this->viewer()
-            ->setController(NetworkItemView::class)
-            ->set('item', $this->get('network'));
+            ->setController(NetworkViewer::class)
+            ->set('network', $this->get('network'));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function content($args = [], $null1 = null, $null2 = null)
+    public function content($args = null, $null1 = null, $null2 = null)
     {
-        return $this->viewer(
-            'content',
-            $this->get('network')->all()
-        );
+        return $this->viewer('content', $this->get('network')->all());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function header($args = [], $null1 = null, $null2 = null)
+    public function header($args = null, $null1 = null, $null2 = null)
     {
-        return $this->viewer(
-            'header',
-            $this->get('network')->all()
-        );
+        return $this->viewer('header', $this->get('network')->all());
     }
 }

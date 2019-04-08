@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Plugins\Social\Contracts\NetworkItemViewInterface $this.
+ * @var tiFy\Plugins\Social\Contracts\NetworkViewer $this.
  */
 ?>
 
