@@ -2,7 +2,7 @@
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\App\Container\AppServiceProvider;
+use tiFy\Container\ServiceProvider;
 use tiFy\Plugins\Social\Contracts\NetworkFactory;
 use tiFy\Plugins\Social\Networks\Dailymotion\Dailymotion;
 use tiFy\Plugins\Social\Networks\Facebook\Facebook;
@@ -17,7 +17,7 @@ use tiFy\Plugins\Social\Networks\Youtube\Youtube;
 use tiFy\Plugins\Social\Networks\NetworksOptions;
 use tiFy\Plugins\Social\Networks\NetworkViewer;
 
-class SocialServiceProvider extends AppServiceProvider
+class SocialServiceProvider extends ServiceProvider
 {
     /**
      * Liste des noms de qualification des services fournis.
