@@ -16,7 +16,7 @@ use tiFy\Plugins\Social\Contracts\Social as SocialContract;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.12
+ * @version 2.0.13
  *
  * USAGE :
  * Activation
@@ -62,7 +62,7 @@ class Social extends Collection implements SocialContract
         $this->container = $container;
 
         add_action('admin_enqueue_scripts', function () {
-            field('toggle-switch')->enqueue_scripts();
+            field('toggle-switch')->enqueue();
 
             wp_register_style(
                 'Social-adminOptions',
