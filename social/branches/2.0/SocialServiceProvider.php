@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace tiFy\Plugins\Social;
 
@@ -59,16 +59,15 @@ class SocialServiceProvider extends ServiceProvider
     ];
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function boot()
+    public function boot(): void
     {
         add_action('after_setup_theme', function () {
             $social = $this->getContainer()->get('social');
 
             $actives = [];
             if ($networks = config('social.networks', [])) {
-
                 foreach($networks as $k => $v) {
                     if (is_numeric($k)) {
                         $actives[] = $v;
@@ -80,6 +79,7 @@ class SocialServiceProvider extends ServiceProvider
             } else {
                 $actives = $this->availableNetworks;
             }
+
             if ($actives) {
                 $items = [];
                 foreach ($actives as $alias) {
@@ -89,14 +89,13 @@ class SocialServiceProvider extends ServiceProvider
 
                 $this->getContainer()->get('social.networks.options');
             }
-
         });
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function register()
+    public function register(): void
     {
         $this->getContainer()->share('social', function () {
             return new Social($this->getContainer());
@@ -114,7 +113,7 @@ class SocialServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function registerNetworks()
+    public function registerNetworks(): void
     {
         $this->getContainer()->share('social.networks.factory.dailymotion', function () {
             return new Dailymotion(config('social.networks.dailymotion', []), $this->getContainer()->get('social'));
@@ -162,7 +161,7 @@ class SocialServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function registerOptions()
+    public function registerOptions(): void
     {
         $this->getContainer()->share('social.networks.options', function () {
             return new NetworksOptions($this->getContainer()->get('social'));
@@ -174,7 +173,7 @@ class SocialServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function registerViewers()
+    public function registerViewers(): void
     {
         $this->getContainer()->add('social.networks.viewer', function (NetworkFactory $network) {
             $default_dir = __DIR__ . '/Resources/views/network';

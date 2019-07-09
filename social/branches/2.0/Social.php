@@ -1,14 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace tiFy\Plugins\Social;
 
-use Illuminate\Support\Arr;
-use Psr\Container\ContainerInterface;
+use Psr\Container\ContainerInterface as Container;
 use tiFy\Contracts\View\ViewEngine;
-use tiFy\Kernel\Tools;
-use tiFy\Support\Collection;
-use tiFy\Plugins\Social\Contracts\NetworkFactory;
-use tiFy\Plugins\Social\Contracts\Social as SocialContract;
+use tiFy\Wordpress\Proxy\Field;
+use tiFy\Support\Proxy\Storage;
+use tiFy\Support\{Arr, Collection};
+use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
 
 /**
  * Class Social
@@ -16,7 +15,7 @@ use tiFy\Plugins\Social\Contracts\Social as SocialContract;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.13
+ * @version 2.0.14
  *
  * USAGE :
  * Activation
@@ -46,27 +45,33 @@ class Social extends Collection implements SocialContract
 {
     /**
      * Instance du conteneur d'injection de dépendances.
-     * @var ContainerInterface
+     * @var Container
      */
     protected $container;
 
     /**
+     * Instance du systeme de fichier de stockage des ressources
+     * @var
+     */
+    protected $resources;
+
+    /**
      * CONSTRUCTEUR.
      *
-     * @param ContainerInterface $container Instance du conteneur d'injection de dépendances.
+     * @param Container $container Instance du conteneur d'injection de dépendances.
      *
      * @return void
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(Container $container)
     {
         $this->container = $container;
 
-        add_action('admin_enqueue_scripts', function () {
-            field('toggle-switch')->enqueue();
+        $this->resources = Storage::local(__DIR__ . '/Resources');
 
+        add_action('admin_enqueue_scripts', function () {
             wp_register_style(
                 'Social-adminOptions',
-                class_info($this)->getUrl() . '/Resources/assets/css/admin-options.css',
+                class_info($this)->getUrl() . '/Resources/assets/css/admin.css',
                 [],
                 180822,
                 'screen'
@@ -76,6 +81,8 @@ class Social extends Collection implements SocialContract
                 (get_current_screen()->id === 'settings_page_tify_options') &&
                 config('social.admin_enqueue_scripts', true)
             ) {
+                Field::get('toggle-switch')->enqueue();
+
                 wp_enqueue_style('Social-adminOptions');
             }
         });
@@ -100,7 +107,9 @@ class Social extends Collection implements SocialContract
      */
     public function getNetworkIcon($name)
     {
-        return Tools::File()->svgGetContents(__DIR__ . "/Resources/assets/networks/{$name}/img/icon.svg") ? : '';
+        $path = "/assets/networks/{$name}/img/icon.svg";
+
+        return $this->resources->has($path) ? (string) call_user_func($this->resources, $path) : '';
     }
 
     /**
