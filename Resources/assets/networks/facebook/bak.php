@@ -3,9 +3,9 @@
 /**
  * {@inheritdoc}
  */
-public function boot()
-{
-    parent::boot();
+//public function boot()
+//{
+  //  parent::boot();
 
     /**
      * $this->view()
@@ -16,14 +16,14 @@ public function boot()
      * $this->app->appAddAction('wp_ajax_tify_fb_post2feed_callback', [$this, 'wp_ajax']);
      * $this->app->appAddAction('wp_ajax_nopriv_tify_fb_post2feed_callback', [$this, 'wp_ajax']);
      */
-}
+//}
 
 // _________________________________________________________________________________________________________________
 /**
  * Initialisation globale de Wordpress.
  *
  * @return void
- */
+
 final public function init()
 {
     \wp_register_style(
@@ -39,7 +39,7 @@ final public function init()
         160511,
         true
     );
-}
+} */
 
     // _________________________________________________________________________________________________________________
     /**
@@ -47,21 +47,21 @@ final public function init()
      * @todo
      *
      * @return void
-     */
+
     final public function wp_enqueue_scripts()
 {
     if ($this->isActive() && $this->get('appId')) :
         \wp_enqueue_style('tiFyPluginSocialFacebook-share');
         \wp_enqueue_script('tiFyPluginSocialFacebook-share');
     endif;
-}
+}*/
 
     /**
      * Requête Ajax
      * @todo
      *
      * Rappel de traitement de partage
-     */
+
     final public function wp_ajax()
 {
     $output = apply_filters(
@@ -72,7 +72,7 @@ final public function init()
     );
 
     wp_die($output);
-}
+}*/
 
     /**
      * Lien de partage
@@ -85,15 +85,14 @@ final public function init()
      * @param bool $echo Activation de l'affichage
      *
      * @return null|string
-     */
+
     public static function shareButton($post = 0, $args = [], $echo = true)
 {
     static $Instance;
     $Instance++;
 
-    /**
-     * @var \tiFy\Plugins\Social\Networks\Facebook\Facebook $network
-     */
+    // @var \tiFy\Plugins\Social\Networks\Facebook\Facebook $network
+
     $network = self::tFyAppGetContainer('tiFy\Plugins\Social\Networks\Facebook\Facebook');
 
     // Initialisation de Facebook
@@ -157,7 +156,7 @@ final public function init()
             $href = $params['link'];
         endif;
     else :
-        /** @see https://developers.facebook.com/docs/sharing/reference/share-dialog * */
+        // @see https://developers.facebook.com/docs/sharing/reference/share-dialog
         if (!$href) :
             global $wp;
             $href = home_url(add_query_arg([], $wp->request));
@@ -179,4 +178,4 @@ final public function init()
     else :
         return $output;
     endif;
-}
+}*/
