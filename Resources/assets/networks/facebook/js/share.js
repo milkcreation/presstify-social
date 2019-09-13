@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
 
     /** @todo **/
     function tify_social_facebook_share_callback(response) {
-        $.post(tify_ajaxurl, {
+        $.post(tify.ajaxurl, {
             action: 'tify_social_facebook_share_callback',
             response: response,
             attrs: callback_attrs
