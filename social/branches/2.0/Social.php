@@ -15,7 +15,7 @@ use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.16
+ * @version 2.0.17
  *
  * USAGE :
  * Activation
