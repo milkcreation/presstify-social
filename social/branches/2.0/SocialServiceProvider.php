@@ -4,6 +4,7 @@ namespace tiFy\Plugins\Social;
 
 use tiFy\Container\ServiceProvider;
 use tiFy\Plugins\Social\Contracts\NetworkFactory;
+use tiFy\Plugins\Social\Networks\Networks;
 use tiFy\Plugins\Social\Networks\Dailymotion\Dailymotion;
 use tiFy\Plugins\Social\Networks\Facebook\Facebook;
 use tiFy\Plugins\Social\Networks\GooglePlus\GooglePlus;
@@ -14,7 +15,6 @@ use tiFy\Plugins\Social\Networks\Twitter\Twitter;
 use tiFy\Plugins\Social\Networks\Viadeo\Viadeo;
 use tiFy\Plugins\Social\Networks\Vimeo\Vimeo;
 use tiFy\Plugins\Social\Networks\Youtube\Youtube;
-use tiFy\Plugins\Social\Networks\NetworksOptions;
 use tiFy\Plugins\Social\Networks\NetworkViewer;
 
 class SocialServiceProvider extends ServiceProvider
@@ -26,6 +26,7 @@ class SocialServiceProvider extends ServiceProvider
      */
     protected $provides = [
         'social',
+        'social.networks',
         'social.networks.factory.dailymotion',
         'social.networks.factory.facebook',
         'social.networks.factory.google-plus',
@@ -36,9 +37,8 @@ class SocialServiceProvider extends ServiceProvider
         'social.networks.factory.viadeo',
         'social.networks.factory.vimeo',
         'social.networks.factory.youtube',
-        'social.networks.options',
         'social.networks.viewer',
-        'social.viewer',
+        'social.viewer'
     ];
 
     /**
@@ -87,7 +87,7 @@ class SocialServiceProvider extends ServiceProvider
                 }
                 $social->set($items);
 
-                $this->getContainer()->get('social.networks.options');
+                $this->getContainer()->get('social.networks');
             }
         });
     }
@@ -163,8 +163,8 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function registerOptions(): void
     {
-        $this->getContainer()->share('social.networks.options', function () {
-            return new NetworksOptions($this->getContainer()->get('social'));
+        $this->getContainer()->share('social.networks', function () {
+            return new Networks($this->getContainer()->get('social'));
         });
     }
 
