@@ -10,12 +10,10 @@ use tiFy\Support\{Arr, Collection};
 use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
 
 /**
- * Class Social
- *
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.17
+ * @version 2.0.18
  *
  * USAGE :
  * Activation
