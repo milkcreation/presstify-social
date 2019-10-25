@@ -1,81 +1,167 @@
-<?php
-
-/**
- * @name Social
- * @desc Gestion des réseaux sociaux
- * @author Jordy Manner <jordy@milkcreation.fr>
- * @package presstify-plugins/social
- * @namespace \tiFy\Plugins\Social
- * @version 1.4.1
- */
+<?php declare(strict_types=1);
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\Core\Options\Options;
+use Psr\Container\ContainerInterface as Container;
+use tiFy\Contracts\View\ViewEngine;
+use tiFy\Wordpress\Proxy\Field;
+use tiFy\Support\Proxy\Storage;
+use tiFy\Support\{Arr, Collection};
+use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
 
-class Social extends \tiFy\App\Plugin
+/**
+ * @desc Extension PresstiFy de gestion des réseaux sociaux.
+ * @author Jordy Manner <jordy@milkcreation.fr>
+ * @package tiFy\Plugins\Social
+ * @version 2.0.20
+ *
+ * USAGE :
+ * Activation
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services.
+ * ex.
+ * <?php
+ * ...
+ * use tiFy\Plugins\Social\SocialServiceProvider;
+ * ...
+ *
+ * return [
+ *      ...
+ *      'providers' => [
+ *          ...
+ *          SocialServiceProvider::class
+ *          ...
+ *      ]
+ * ];
+ *
+ * Configuration
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Dans le dossier de config, créer le fichier social.php
+ * @see /vendor/presstify-plugins/social/Resources/config/social.php
+ */
+class Social extends Collection implements SocialContract
 {
     /**
-     * Liste des options
-     * @var array
+     * Instance du conteneur d'injection de dépendances.
+     * @var Container
      */
-    public static $Options = [];
+    protected $container;
 
     /**
-     * CONSTRUCTEUR
+     * Instance du systeme de fichier de stockage des ressources
+     * @var
+     */
+    protected $resources;
+
+    /**
+     * CONSTRUCTEUR.
+     *
+     * @param Container $container Instance du conteneur d'injection de dépendances.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Container $container)
     {
-        parent::__construct();
+        $this->container = $container;
 
-        // Récupération des options enregistrées
-        self::$Options = get_option('tify_social_share', []);
+        $this->resources = Storage::local(__DIR__ . '/Resources');
 
-        // Chargement des réseaux
-        foreach ((array)self::tFyAppConfig('Networks') as $name => $attrs) :
-            $classname = "tiFy\\Plugins\\Social\\Networks\\" . ucfirst($name) . "\\" . ucfirst($name);
+        add_action('admin_enqueue_scripts', function () {
+            wp_register_style(
+                'Social-adminOptions',
+                class_info($this)->getUrl() . '/Resources/assets/css/admin.css',
+                [],
+                180822,
+                'screen'
+            );
 
-            // Bypass - Le réseau n'existe pas
-            if (!class_exists($classname)) {
-                continue;
+            if (
+                (get_current_screen()->id === 'settings_page_tify_options') &&
+                config('social.admin_enqueue_scripts', true)
+            ) {
+                Field::get('toggle-switch')->enqueue();
+
+                wp_enqueue_style('Social-adminOptions');
             }
-            self::tFyAppShareContainer($classname, new $classname($attrs));
-        endforeach;
-
-        // Déclaration des événements
-        $this->appAddAction('admin_enqueue_scripts');
-        $this->appAddAction('tify_options_register_node');
+        });
     }
 
     /**
-     * EVENEMENTS
+     * @inheritdoc
      */
-    /**
-     * Mise en file des scripts de l'interface d'administration
-     *
-     * @return void
-     */
-    public function admin_enqueue_scripts()
+    public function getMenuItems()
     {
-        \wp_enqueue_style('font-awesome');
+        return $this->collect()
+            ->filter(function (NetworkFactory $item) {
+                return ($item->isActive() === true) && ($item->hasUri() === true);
+            })
+            ->sortBy(function (NetworkFactory $item) {
+                return $item->getOrder();
+            });
     }
 
     /**
-     * Déclaration de la boîte à onglets d'administration des options des réseaux sociaux déclarés
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function tify_options_register_node()
+    public function getNetworkIcon($name)
     {
-        Options::registerNode(
-            [
-                'id'    => 'tiFyPlugins-socialNetworks',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ]
-        );
+        $path = "/assets/networks/{$name}/img/icon.svg";
 
-        \register_setting('tify_options', 'tify_social_share');
+        return $this->resources->has($path) ? (string) call_user_func($this->resources, $path) : '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function menuRender($attrs = [])
+    {
+        Arr::set($attrs, 'attrs.class', sprintf(
+            Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
+        ));
+
+        $attrs['items'] = $this->getMenuItems();
+
+        return $this->viewer('menu', $attrs);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function pageLinkRender($network, $attrs = [])
+    {
+        return $this->resolve("networks.factory.{$network}")->pageLink($attrs);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function resolve($alias, ...$args)
+    {
+        return $this->container->get("social.{$alias}", $args);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function viewer($view = null, $data = [])
+    {
+        /** @var ViewEngine $viewer */
+        $viewer = $this->resolve('viewer');
+
+        if (func_num_args() === 0) {
+            return $viewer;
+        }
+
+        return $viewer->make("_override::{$view}", $data);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function walk($item, $key = null)
+    {
+        if ($item instanceof NetworkFactory) {
+            $this->items[$key] = $item;
+        }
     }
 }
