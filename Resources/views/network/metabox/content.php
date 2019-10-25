@@ -19,6 +19,7 @@
     </tr>
     </tbody>
 </table>
+
 <table class="form-table">
     <tbody>
     <tr>

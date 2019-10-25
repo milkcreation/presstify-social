@@ -39,7 +39,7 @@ class NetworkViewer extends ViewController implements NetworkViewerContract
     {
         if (in_array($name, $this->mixins)) {
             return call_user_func_array(
-                [$this->engine->get('network'), $name],
+                [$this->engine->params('network'), $name],
                 $arguments
             );
         }
