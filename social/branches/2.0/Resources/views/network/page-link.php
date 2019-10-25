@@ -4,5 +4,4 @@
  * ---------------------------------------------------------------------------------------------------------------------
  * @var tiFy\Plugins\Social\Contracts\NetworkViewer $this
  */
-?>
-<?php echo partial('tag', $this->all());
+echo partial('tag', $this->all());

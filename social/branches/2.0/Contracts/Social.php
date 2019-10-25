@@ -47,6 +47,9 @@ interface Social extends Collection
     /**
      * Récupération d'une instance d'un service du plugin.
      *
+     * @param string $alias
+     * @param array ...$args
+     *
      * @return object
      */
     public function resolve($alias, ...$args);

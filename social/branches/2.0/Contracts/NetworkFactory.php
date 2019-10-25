@@ -91,9 +91,6 @@ interface NetworkFactory extends ParamsBag
      * {@internal Si aucun argument n'est passé  la méthode, retourne l'intance du controleur principal.}
      * {@internal Sinon récupère le gabarit d'affichage et passe les variables en argument.}
      *
-     * @param null|string view Nom de qualification du gabarit.
-     * @param array $data Liste des variables passées en argument.
-     *
      * @return NetworkViewer|ViewEngine
      */
     public function viewer();

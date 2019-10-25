@@ -185,7 +185,7 @@ class SocialServiceProvider extends ServiceProvider
                         ? $override_dir
                         : $default_dir
                 )
-                ->set('network', $network);
+                ->setParam('network', $network);
         });
 
         $this->getContainer()->share('social.viewer', function () {
