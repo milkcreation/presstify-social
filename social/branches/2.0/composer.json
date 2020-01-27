@@ -9,7 +9,7 @@
     "social"
   ],
   "homepage": "https://svn.tigreblanc.fr/presstify-plugins/social",
-  "time": "2019-12-14",
+  "time": "2020-01-26",
   "license": "proprietary",
   "authors": [
     {
@@ -21,11 +21,12 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "http://composer.tigreblanc.fr/presstify/"
+      "url": "https://composer.tigreblanc.fr/presstify"
     }
   ],
   "require": {
     "composer/installers": "~1.0",
+    "hybridauth/hybridauth": "~3.0",
     "presstify/framework": ">=1.4"
   },
   "autoload": {
@@ -38,7 +39,7 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "config" : {
+  "config": {
     "optimize-autoloader": true,
     "preferred-install": "dist",
     "secure-http": false,

@@ -2,18 +2,19 @@
 
 namespace tiFy\Plugins\Social;
 
-use Psr\Container\ContainerInterface as Container;
-use tiFy\Contracts\View\ViewEngine;
-use tiFy\Wordpress\Proxy\Field;
+use InvalidArgumentException;
+use tiFy\Contracts\{Container\Container, Filesystem\LocalFilesystem};
+use tiFy\Support\Proxy\Metabox;
 use tiFy\Support\Proxy\Storage;
-use tiFy\Support\{Arr, Collection};
-use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
+use tiFy\Plugins\Social\Channel\ChannelDriver;
+use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social as SocialContract};
+use tiFy\Support\Proxy\View;
 
 /**
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.21
+ * @version 2.0.22
  *
  * USAGE :
  * Activation
@@ -39,8 +40,14 @@ use tiFy\Plugins\Social\Contracts\{NetworkFactory, Social as SocialContract};
  * Dans le dossier de config, créer le fichier social.php
  * @see /vendor/presstify-plugins/social/Resources/config/social.php
  */
-class Social extends Collection implements SocialContract
+class Social implements SocialContract
 {
+    /**
+     * Instances des réseaux déclarés.
+     * @var ChannelDriverContract[]|array
+     */
+    protected $channels = [];
+
     /**
      * Instance du conteneur d'injection de dépendances.
      * @var Container
@@ -49,119 +56,126 @@ class Social extends Collection implements SocialContract
 
     /**
      * Instance du systeme de fichier de stockage des ressources
-     * @var
+     * @var LocalFilesystem
      */
     protected $resources;
+
+    protected $view;
 
     /**
      * CONSTRUCTEUR.
      *
-     * @param Container $container Instance du conteneur d'injection de dépendances.
+     * @param Container|null $container Instance du conteneur d'injection de dépendances.
      *
      * @return void
      */
-    public function __construct(Container $container)
+    public function __construct(?Container $container = null)
     {
         $this->container = $container;
-
         $this->resources = Storage::local(__DIR__ . '/Resources');
 
-        add_action('admin_enqueue_scripts', function () {
-            wp_register_style(
-                'Social-adminOptions',
-                class_info($this)->getUrl() . '/Resources/assets/css/admin.css',
-                [],
-                180822,
-                'screen'
+        Metabox::add('Social', [
+            'name'     => 'tify_social_share',
+            'title'    => __('Réseaux sociaux', 'tify')
+        ])->setScreen('tify_options@options')->setContext('tab');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addChannel(string $name, $attrs): ChannelDriverContract
+    {
+        if (is_array($attrs)) {
+            $driver = $attrs['driver'] ?? null;
+            unset($attrs['driver']);
+        } else {
+            $driver = $attrs;
+        }
+
+        if (!$driver) {
+            $driver = ChannelDriver::class;
+        }
+
+        if (is_object($driver)) {
+            $channel = $driver->set($attrs);
+        } elseif (class_exists($driver)) {
+            $channel = new $driver($name, $attrs, $this);
+        } elseif (is_string($driver) && $this->getContainer()) {
+            $channel = $this->getContainer()->get("social.channel.{$driver}", [$attrs]);
+        } else {
+            $channel = new ChannelDriver($name, $attrs, $this);
+        }
+
+        if ($driver instanceof ChannelDriverContract) {
+            throw new InvalidArgumentException(
+                sprintf(__('Impossible de définir le pilote associé au réseau social [%s].', 'tify'), $name)
             );
+        } else {
+            $channel->boot();
 
-            if (
-                (get_current_screen()->id === 'settings_page_tify_options') &&
-                config('social.admin_enqueue_scripts', true)
-            ) {
-                Field::get('toggle-switch')->enqueue();
-
-                wp_enqueue_style('Social-adminOptions');
-            }
-        });
+            return $this->channels[$name] = $channel->parse();
+        }
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getMenuItems()
+    public function getContainer(): ?Container
     {
-        return $this->collect()
-            ->filter(function (NetworkFactory $item) {
-                return ($item->isActive() === true) && ($item->hasUri() === true);
-            })
-            ->sortBy(function (NetworkFactory $item) {
-                return $item->getOrder();
-            });
+        return $this->container;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function getNetworkIcon($name)
+    public function getChannel(string $name): ?ChannelDriverContract
     {
-        $path = "/assets/networks/{$name}/img/icon.svg";
-
-        return $this->resources->has($path) ? (string) call_user_func($this->resources, $path) : '';
+        return $this->channels[$name] ?? null;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function menuRender($attrs = [])
+    public function getChannels(): array
     {
-        Arr::set($attrs, 'attrs.class', sprintf(
-            Arr::get($attrs, 'attrs.class', '%s'), 'Social-menu'
-        ));
-
-        $attrs['items'] = $this->getMenuItems();
-
-        return $this->viewer('menu', $attrs);
+        return $this->channels;
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function pageLinkRender($network, $attrs = [])
+    public function getResources(?string $path = null)
     {
-        return $this->resolve("networks.factory.{$network}")->pageLink($attrs);
+        if (is_null($path)) {
+            return $this->resources;
+        } else {
+            return $this->resources->has($path) ? (string)call_user_func($this->resources, $path) : '';
+        }
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function resolve($alias, ...$args)
+    public function channelLink(string $name, array $attrs = []): string
     {
-        return $this->container->get("social.{$alias}", $args);
+        return ($channel = $this->getChannel($name)) ? $channel->pageLink($attrs) : '';
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function viewer($view = null, $data = [])
+    public function view(?string $name = null, array $data = [])
     {
-        /** @var ViewEngine $viewer */
-        $viewer = $this->resolve('viewer');
+        if (is_null($this->view)) {
+            $this->view = View::getPlatesEngine([
+                'directory' => __DIR__ . '/Resources/views',
+            ]);
+        }
 
         if (func_num_args() === 0) {
-            return $viewer;
+            return $this->view;
         }
 
-        return $viewer->make("_override::{$view}", $data);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function walk($item, $key = null)
-    {
-        if ($item instanceof NetworkFactory) {
-            $this->items[$key] = $item;
-        }
+        return $this->view->render($name, $data);
     }
 }

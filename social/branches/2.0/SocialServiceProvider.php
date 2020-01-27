@@ -3,19 +3,21 @@
 namespace tiFy\Plugins\Social;
 
 use tiFy\Container\ServiceProvider;
-use tiFy\Plugins\Social\Contracts\NetworkFactory;
-use tiFy\Plugins\Social\Networks\Networks;
-use tiFy\Plugins\Social\Networks\Dailymotion\Dailymotion;
-use tiFy\Plugins\Social\Networks\Facebook\Facebook;
-use tiFy\Plugins\Social\Networks\GooglePlus\GooglePlus;
-use tiFy\Plugins\Social\Networks\Instagram\Instagram;
-use tiFy\Plugins\Social\Networks\Linkedin\Linkedin;
-use tiFy\Plugins\Social\Networks\Pinterest\Pinterest;
-use tiFy\Plugins\Social\Networks\Twitter\Twitter;
-use tiFy\Plugins\Social\Networks\Viadeo\Viadeo;
-use tiFy\Plugins\Social\Networks\Vimeo\Vimeo;
-use tiFy\Plugins\Social\Networks\Youtube\Youtube;
-use tiFy\Plugins\Social\Networks\NetworkViewer;
+use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Plugins\Social\Partial\SocialMenu;
+use tiFy\Plugins\Social\Channel\{
+    DailymotionChannel,
+    FacebookChannel,
+    GooglePlusChannel,
+    InstagramChannel,
+    LinkedinChannel,
+    PinterestChannel,
+    TwitterChannel,
+    ViadeoChannel,
+    VimeoChannel,
+    YoutubeChannel
+};
+use tiFy\Support\Proxy\Partial;
 
 class SocialServiceProvider extends ServiceProvider
 {
@@ -26,26 +28,23 @@ class SocialServiceProvider extends ServiceProvider
      */
     protected $provides = [
         'social',
-        'social.networks',
-        'social.networks.factory.dailymotion',
-        'social.networks.factory.facebook',
-        'social.networks.factory.google-plus',
-        'social.networks.factory.instagram',
-        'social.networks.factory.linkedin',
-        'social.networks.factory.pinterest',
-        'social.networks.factory.twitter',
-        'social.networks.factory.viadeo',
-        'social.networks.factory.vimeo',
-        'social.networks.factory.youtube',
-        'social.networks.viewer',
-        'social.viewer'
+        'social.channel.dailymotion',
+        'social.channel.facebook',
+        'social.channel.google-plus',
+        'social.channel.instagram',
+        'social.channel.linkedin',
+        'social.channel.pinterest',
+        'social.channel.twitter',
+        'social.channel.viadeo',
+        'social.channel.vimeo',
+        'social.channel.youtube',
     ];
 
     /**
      * Liste des nom de qualification des réseaux disponibles
      * @var string[]
      */
-    private $availableNetworks = [
+    private $availableChannels = [
         'dailymotion',
         'facebook',
         'google-plus',
@@ -55,7 +54,7 @@ class SocialServiceProvider extends ServiceProvider
         'twitter',
         'viadeo',
         'vimeo',
-        'youtube'
+        'youtube',
     ];
 
     /**
@@ -64,31 +63,26 @@ class SocialServiceProvider extends ServiceProvider
     public function boot(): void
     {
         add_action('after_setup_theme', function () {
+            /** @var Social $social */
             $social = $this->getContainer()->get('social');
 
-            $actives = [];
-            if ($networks = config('social.networks', [])) {
-                foreach($networks as $k => $v) {
-                    if (is_numeric($k)) {
-                        $actives[] = $v;
-                    } else {
-                        $actives[] = $k;
-                    }
+            $registered = [];
+            if ($channels = config('social.channel', [])) {
+                foreach ($channels as $k => $v) {
+                    $registered[] = is_numeric($k) ? $v : $k;
                 }
-                $actives = array_intersect($actives, $this->availableNetworks);
+                $registered = array_intersect($registered, $this->availableChannels);
             } else {
-                $actives = $this->availableNetworks;
+                $registered = $this->availableChannels;
             }
 
-            if ($actives) {
-                $items = [];
-                foreach ($actives as $alias) {
-                    $items[$alias] = $this->getContainer()->get("social.networks.factory.{$alias}");
+            if ($registered) {
+                foreach ($registered as $name) {
+                    $social->addChannel($name, array_merge(['driver' => $name], config("social.channel.{$name}", [])));
                 }
-                $social->set($items);
-
-                $this->getContainer()->get('social.networks');
             }
+
+            Partial::register('social-menu', new SocialMenu($social));
         });
     }
 
@@ -101,96 +95,54 @@ class SocialServiceProvider extends ServiceProvider
             return new Social($this->getContainer());
         });
 
-        $this->registerNetworks();
-
-        $this->registerOptions();
-
-        $this->registerViewers();
+        $this->registerChannels();
     }
 
     /**
-     * Déclaration des controleurs de réseaux
+     * Déclaration des controleurs de réseaux.
      *
      * @return void
      */
-    public function registerNetworks(): void
+    public function registerChannels(): void
     {
-        $this->getContainer()->share('social.networks.factory.dailymotion', function () {
-            return new Dailymotion(config('social.networks.dailymotion', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.dailymotion', function (array $attrs): ChannelDriverContract {
+            return new DailymotionChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.facebook', function () {
-            return new Facebook(config('social.networks.facebook', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.facebook', function (array $attrs): ChannelDriverContract {
+            return new FacebookChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.google-plus', function () {
-            return new GooglePlus(config('social.networks.google-plus', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.google-plus', function (array $attrs): ChannelDriverContract {
+            return new GooglePlusChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.instagram', function () {
-            return new Instagram(config('social.networks.instagram', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.instagram', function (array $attrs): ChannelDriverContract {
+            return new InstagramChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.linkedin', function () {
-            return new Linkedin(config('social.networks.linkedin', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.linkedin', function (array $attrs): ChannelDriverContract {
+            return new LinkedinChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.pinterest', function () {
-            return new Pinterest(config('social.networks.pinterest', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.pinterest', function (array $attrs): ChannelDriverContract {
+            return new PinterestChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.twitter', function () {
-            return new Twitter(config('social.networks.twitter', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.twitter', function (array $attrs): ChannelDriverContract {
+            return new TwitterChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.viadeo', function () {
-            return new Viadeo(config('social.networks.viadeo', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.viadeo', function (array $attrs): ChannelDriverContract {
+            return new ViadeoChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.vimeo', function () {
-            return new Vimeo(config('social.networks.vimeo', []), $this->getContainer()->get('social'));
+        $this->getContainer()->add('social.channel.vimeo', function (array $attrs): ChannelDriverContract {
+            return new VimeoChannel($attrs, $this->getContainer()->get('social'));
         });
 
-        $this->getContainer()->share('social.networks.factory.youtube', function () {
-            return new Youtube(config('social.networks.youtube', []), $this->getContainer()->get('social'));
-        });
-    }
-
-    /**
-     * Déclaration des controleurs de gestion des options.
-     *
-     * @return void
-     */
-    public function registerOptions(): void
-    {
-        $this->getContainer()->share('social.networks', function () {
-            return new Networks($this->getContainer()->get('social'));
-        });
-    }
-
-    /**
-     * Déclaration du controleur de gabarit d'affichage.
-     *
-     * @return void
-     */
-    public function registerViewers(): void
-    {
-        $this->getContainer()->add('social.networks.viewer', function (NetworkFactory $network) {
-            $default_dir = __DIR__ . '/Resources/views/network';
-            return view()
-                ->setDirectory($default_dir)
-                ->setController(NetworkViewer::class)
-                ->setOverrideDir(
-                    (($override_dir = $network->get('viewer.override_dir')) && is_dir($override_dir))
-                        ? $override_dir
-                        : $default_dir
-                )
-                ->setParam('network', $network);
-        });
-
-        $this->getContainer()->share('social.viewer', function () {
-            $default_dir = __DIR__ . '/Resources/views';
-            return view()->setDirectory($default_dir)->setOverrideDir($default_dir);
+        $this->getContainer()->add('social.channel.youtube', function (array $attrs): ChannelDriverContract {
+            return new YoutubeChannel($attrs, $this->getContainer()->get('social'));
         });
     }
 }
