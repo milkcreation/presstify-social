@@ -1,68 +1,70 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use tiFy\Contracts\Support\Collection;
-use tiFy\Contracts\View\ViewController;
-use tiFy\Contracts\View\ViewEngine;
+use InvalidArgumentException;
+use tiFy\Contracts\{Container\Container, Filesystem\LocalFilesystem, View\Engine as ViewEngine};
 
-interface Social extends Collection
+interface Social
 {
     /**
-     * Récupération de la liste des réseaux pris en charge affichable dans le menu par ordre d'affichage.
-     * {@internal le réseaux doit être actif, son url renseignée. La liste est triée par ordre d'affichage.}
+     * Ajout d'un réseau à liste des réseaux déclarés.
      *
-     * @return NetworkFactory[]
+     * @return ChannelDriver
+     *
+     * @throws InvalidArgumentException
      */
-    public function getMenuItems();
+    public function addChannel(string $name, $attrs): ChannelDriver;
 
     /**
-     * Récupération de l'icône d'un réseau.
+     * Récupération de l'instance d'un réseau déclaré.
      *
-     * @param string $name Nom de qualification du réseau
+     * @param string $name Nom de qualification du réseau.
      *
-     * @return string
+     * @return ChannelDriver|null
      */
-    public function getNetworkIcon($name);
+    public function getChannel(string $name): ?ChannelDriver;
 
     /**
-     * Affichage d'un menu de la liste des liens vers la page des comptes des réseaux.
+     * Récupération de la liste des instances de réseaux déclarés.
      *
-     * @param array $attrs Liste des attributs de configuration.
-     *
-     * @return string
+     * @return ChannelDriver[]|array
      */
-    public function menuRender($attrs = []);
+    public function getChannels(): array;
 
     /**
-     * Affichage d'un lien vers la page du compte d'un réseau.
+     * Récupération de l'instance du conteneur d'injection de dépendances.
      *
-     * @param string $alias Nom de qualification du réseau.
+     * @return Container|null
+     */
+    public function getContainer(): ?Container;
+
+    /**
+     * Récupération de l'instance de stockage des ressources ou Contenu d'une ressource selon son chemin.
+     *
+     * @param string|null $path Chemin relatif vers la resource.
+     *
+     * @return LocalFilesystem|string
+     */
+    public function getResources(?string $path = null);
+
+    /**
+     * Rendu d'affichage d'un lien vers la page du compte d'un réseau.
+     *
+     * @param string $name Nom de qualification du réseau.
      * @param array $attrs Liste des attributs de configuration personnalisé.
      *
      * @return string
      */
-    public function pageLinkRender($alias, $attrs = []);
+    public function channelLink(string $name, array $attrs = []): string;
 
     /**
-     * Récupération d'une instance d'un service du plugin.
+     * Instance du gestionnaire de gabarits d'affichage ou rendu du gabarit d'affichage.
      *
-     * @param string $alias
-     * @param array ...$args
-     *
-     * @return object
-     */
-    public function resolve($alias, ...$args);
-
-    /**
-     * Instance du gestionnaire des gabarits d'affichage ou instance d'un gabarit d'affichage.
-     * {@internal Si aucun argument n'est passé  la méthode, retourne l'intance du controleur principal.}
-     * {@internal Sinon récupère le gabarit d'affichage et passe les variables en argument.}
-     *
-     * @param null|string view Nom de qualification du gabarit.
+     * @param string|null $name Nom de qualification du gabarit.
      * @param array $data Liste des variables passées en argument.
      *
-     * @return ViewController|ViewEngine
+     * @return ViewEngine|string
      */
-    public function viewer($view = null, $data = []);
+    public function view(?string $name = null, array $data = []);
 }
