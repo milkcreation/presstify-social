@@ -185,6 +185,8 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
 
             if (!$params->has('attrs.class')) {
                 $params->set('attrs.class', 'Social-link Social-link--' . $this->getName());
+            } else {
+                $params->set('attrs.class', sprintf($params->get('attrs.class', '%s'), $this->getName()));
             }
 
             if (!$params->has('attrs.title')) {

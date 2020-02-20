@@ -3,8 +3,8 @@
 namespace tiFy\Plugins\Social\Partial;
 
 use Illuminate\Support\Collection;
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
-use tiFy\Plugins\Social\Contracts\Social;
+use tiFy\Contracts\Partial\PartialDriver as PartialDriverContract;
+use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social};
 use tiFy\Partial\PartialDriver;
 
 class SocialMenu extends PartialDriver
@@ -37,6 +37,38 @@ class SocialMenu extends PartialDriver
         $this->set(
             'viewer.directory', $this->social->getResources()->path('/views/partial/menu')
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function defaults(): array
+    {
+        return [
+            'classes' => [
+
+            ]
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function parse(): PartialDriverContract
+    {
+        parent::parse();
+
+        $defaultClasses = [
+            'item'    => 'Social-menuChannel',
+            'items'   => 'Social-menuChannels',
+            'link'    => '%s'
+        ];
+
+        foreach ($defaultClasses as $k => $v) {
+            $this->set("classes.{$k}", sprintf($this->get("classes.{$k}", '%s'), $v));
+        }
+
+        return $this;
     }
 
     /**

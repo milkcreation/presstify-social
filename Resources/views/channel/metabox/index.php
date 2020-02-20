@@ -13,7 +13,7 @@
         <td>
             <?php echo field('toggle-switch', [
                 'name'  => $this->name() . '[active]',
-                'value' => $this->value('active'),
+                'value' => $this->value('active') ? 'on' : 'off',
             ]); ?>
         </td>
     </tr>
