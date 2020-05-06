@@ -1,81 +1,181 @@
-<?php
-
-/**
- * @name Social
- * @desc Gestion des réseaux sociaux
- * @author Jordy Manner <jordy@milkcreation.fr>
- * @package presstify-plugins/social
- * @namespace \tiFy\Plugins\Social
- * @version 1.4.1
- */
+<?php declare(strict_types=1);
 
 namespace tiFy\Plugins\Social;
 
-use tiFy\Core\Options\Options;
+use InvalidArgumentException;
+use tiFy\Contracts\{Container\Container, Filesystem\LocalFilesystem};
+use tiFy\Support\Proxy\Metabox;
+use tiFy\Support\Proxy\Storage;
+use tiFy\Plugins\Social\Channel\ChannelDriver;
+use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social as SocialContract};
+use tiFy\Support\Proxy\View;
 
-class Social extends \tiFy\App\Plugin
+/**
+ * @desc Extension PresstiFy de gestion des réseaux sociaux.
+ * @author Jordy Manner <jordy@milkcreation.fr>
+ * @package tiFy\Plugins\Social
+ * @version 2.0.24
+ *
+ * USAGE :
+ * Activation
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services.
+ * ex.
+ * <?php
+ * ...
+ * use tiFy\Plugins\Social\SocialServiceProvider;
+ * ...
+ *
+ * return [
+ *      ...
+ *      'providers' => [
+ *          ...
+ *          SocialServiceProvider::class
+ *          ...
+ *      ]
+ * ];
+ *
+ * Configuration
+ * ---------------------------------------------------------------------------------------------------------------------
+ * Dans le dossier de config, créer le fichier social.php
+ * @see /vendor/presstify-plugins/social/Resources/config/social.php
+ */
+class Social implements SocialContract
 {
     /**
-     * Liste des options
-     * @var array
+     * Instances des réseaux déclarés.
+     * @var ChannelDriverContract[]|array
      */
-    public static $Options = [];
+    protected $channels = [];
 
     /**
-     * CONSTRUCTEUR
+     * Instance du conteneur d'injection de dépendances.
+     * @var Container
+     */
+    protected $container;
+
+    /**
+     * Instance du systeme de fichier de stockage des ressources
+     * @var LocalFilesystem
+     */
+    protected $resources;
+
+    protected $view;
+
+    /**
+     * CONSTRUCTEUR.
+     *
+     * @param Container|null $container Instance du conteneur d'injection de dépendances.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(?Container $container = null)
     {
-        parent::__construct();
+        $this->container = $container;
+        $this->resources = Storage::local(__DIR__ . '/Resources');
 
-        // Récupération des options enregistrées
-        self::$Options = get_option('tify_social_share', []);
-
-        // Chargement des réseaux
-        foreach ((array)self::tFyAppConfig('Networks') as $name => $attrs) :
-            $classname = "tiFy\\Plugins\\Social\\Networks\\" . ucfirst($name) . "\\" . ucfirst($name);
-
-            // Bypass - Le réseau n'existe pas
-            if (!class_exists($classname)) {
-                continue;
-            }
-            self::tFyAppShareContainer($classname, new $classname($attrs));
-        endforeach;
-
-        // Déclaration des événements
-        $this->appAddAction('admin_enqueue_scripts');
-        $this->appAddAction('tify_options_register_node');
+        Metabox::add('Social', [
+            'name'     => 'tify_social_share',
+            'title'    => __('Réseaux sociaux', 'tify')
+        ])->setScreen('tify_options@options')->setContext('tab');
     }
 
     /**
-     * EVENEMENTS
+     * @inheritDoc
      */
-    /**
-     * Mise en file des scripts de l'interface d'administration
-     *
-     * @return void
-     */
-    public function admin_enqueue_scripts()
+    public function addChannel(string $name, $attrs): ChannelDriverContract
     {
-        \wp_enqueue_style('font-awesome');
+        if (is_array($attrs)) {
+            $driver = $attrs['driver'] ?? null;
+            unset($attrs['driver']);
+        } else {
+            $driver = $attrs;
+        }
+
+        if (!$driver) {
+            $driver = ChannelDriver::class;
+        }
+
+        if (is_object($driver)) {
+            $channel = $driver->set($attrs);
+        } elseif (class_exists($driver)) {
+            $channel = new $driver($name, $attrs, $this);
+        } elseif (is_string($driver) && $this->getContainer()) {
+            $channel = $this->getContainer()->get("social.channel.{$driver}", [$attrs]);
+        } else {
+            $channel = new ChannelDriver($name, $attrs, $this);
+        }
+
+        if ($driver instanceof ChannelDriverContract) {
+            throw new InvalidArgumentException(
+                sprintf(__('Impossible de définir le pilote associé au réseau social [%s].', 'tify'), $name)
+            );
+        } else {
+            $channel->boot();
+
+            return $this->channels[$name] = $channel->parse();
+        }
     }
 
     /**
-     * Déclaration de la boîte à onglets d'administration des options des réseaux sociaux déclarés
-     *
-     * @return void
+     * @inheritDoc
      */
-    public function tify_options_register_node()
+    public function getContainer(): ?Container
     {
-        Options::registerNode(
-            [
-                'id'    => 'tiFyPlugins-socialNetworks',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ]
-        );
+        return $this->container;
+    }
 
-        \register_setting('tify_options', 'tify_social_share');
+    /**
+     * @inheritDoc
+     */
+    public function getChannel(string $name): ?ChannelDriverContract
+    {
+        return $this->channels[$name] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getChannels(): array
+    {
+        return $this->channels;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResources(?string $path = null)
+    {
+        if (is_null($path)) {
+            return $this->resources;
+        } else {
+            return $this->resources->has($path) ? (string)call_user_func($this->resources, $path) : '';
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function channelLink(string $name, array $attrs = []): string
+    {
+        return ($channel = $this->getChannel($name)) ? $channel->pageLink($attrs) : '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function view(?string $name = null, array $data = [])
+    {
+        if (is_null($this->view)) {
+            $this->view = View::getPlatesEngine([
+                'directory' => __DIR__ . '/Resources/views',
+            ]);
+        }
+
+        if (func_num_args() === 0) {
+            return $this->view;
+        }
+
+        return $this->view->render($name, $data);
     }
 }
