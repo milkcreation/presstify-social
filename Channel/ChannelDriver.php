@@ -2,6 +2,7 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
+use Detection\MobileDetect;
 use tiFy\Contracts\View\Engine as ViewEngine;
 use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social};
 use tiFy\Support\ParamsBag;
@@ -56,6 +57,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      * @return array {
      * @var bool $active Activation de la prise en charge.
      * @var bool $admin Activation de l'administrabilité.
+     * @var bool $deeplink Activation de gestion de lien profond.
      * @var string $icon Icone représentative.
      * @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
      * @var string $option_name Nom d'enregistrement des attributs en base.
@@ -69,6 +71,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
         return [
             'active'          => false,
             'admin'           => true,
+            'deeplink'        => true,
             'icon'            => '',
             'page_link_attrs' => [],
             'option_name'     => $this->getOptionName(),
@@ -76,6 +79,14 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
             'title'           => ucfirst($this->name),
             'uri'             => '',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDeeplink(): string
+    {
+        return '';
     }
 
     /**
@@ -97,9 +108,9 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
-    public function getTitle(): string
+    public function getPageUrl(): string
     {
-        return $this->get('title');
+        return $this->get('uri', '');
     }
 
     /**
@@ -137,6 +148,14 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
+    public function getTitle(): string
+    {
+        return $this->get('title');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function hasAdmin(): bool
     {
         return $this->get('admin', true);
@@ -163,6 +182,30 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
+    public function isAndroidOS(): bool
+    {
+        return (new MobileDetect())->is('AndroidOS');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isMobile(): bool
+    {
+        return (new MobileDetect())->isMobile();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isIOS(): bool
+    {
+        return (new MobileDetect())->is('iOS');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function pageLink(array $attrs = []): string
     {
         if (!$this->isActive() || !$this->hasUri()) {
@@ -181,7 +224,14 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
                 );
             }
 
-            $params->set('attrs.href', $this->get('uri', ''));
+            $params->set('attrs.href', $this->getPageUrl());
+
+            if ($this->isMobile() && $this->get('deeplink') && ($deeplink = $this->getDeeplink())) {
+                $params->set([
+                    'attrs.data-control'  => 'social.deeplink',
+                    'attrs.data-deeplink' => $deeplink,
+                ]);
+            }
 
             if (!$params->has('attrs.class')) {
                 $params->set('attrs.class', 'Social-link Social-link--' . $this->getName());
@@ -218,11 +268,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
                 'driver' => new ChannelMetaboxDriver($this, $this->social),
                 'parent' => 'Social',
                 'title'  => $this->getTitle(),
-                'value'  => [
-                    'active' => $this->get('active'),
-                    'order'  => $this->get('order'),
-                    'uri'    => $this->get('uri'),
-                ],
+                'value'  => $this->all(),
             ])->setScreen('tify_options@options')->setContext('tab');
         }
 

@@ -7,6 +7,20 @@ use tiFy\Contracts\{Support\ParamsBag, View\PlatesEngine};
 interface ChannelDriver extends ParamsBag
 {
     /**
+     * Initialisation.
+     *
+     * @return void
+     */
+    public function boot(): void;
+
+    /**
+     * Récupération du lien profond.
+     *
+     * @return string
+     */
+    public function getDeeplink(): string;
+
+    /**
      * Récupération de l'icône représentative.
      *
      * @return string
@@ -26,6 +40,13 @@ interface ChannelDriver extends ParamsBag
      * @return string
      */
     public function getTitle(): string;
+
+    /**
+     * Récupération de l'url de la page.
+     *
+     * @return string
+     */
+    public function getPageUrl(): string;
 
     /**
      * Ordre d'affichage dans la liste des réseaux pris en charge.
@@ -75,6 +96,27 @@ interface ChannelDriver extends ParamsBag
      * @return bool
      */
     public function isActive(): bool;
+
+    /**
+     * Détection Mobile Android.
+     *
+     * @return bool
+     */
+    public function isAndroidOS(): bool;
+
+    /**
+     * Détection Mobile.
+     *
+     * @return bool
+     */
+    public function isMobile(): bool;
+
+    /**
+     * Détection Mobile Apple.
+     *
+     * @return bool
+     */
+    public function isIOS(): bool;
 
     /**
      * Lien vers la page de profil du réseau social.
