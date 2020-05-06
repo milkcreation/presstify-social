@@ -14,7 +14,7 @@ use tiFy\Support\Proxy\View;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.23
+ * @version 2.0.24
  *
  * USAGE :
  * Activation

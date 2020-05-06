@@ -10,6 +10,12 @@ use tiFy\Support\Proxy\View;
 class ChannelMetaboxDriver extends MetaboxDriver
 {
     /**
+     * Instance du réseau associé.
+     * @var ChannelDriver
+     */
+    protected $channel;
+
+    /**
      * Instance du gestionnaire des réseaux.
      * @var Social
      */
@@ -25,7 +31,7 @@ class ChannelMetaboxDriver extends MetaboxDriver
      */
     public function __construct(ChannelDriver $channel, Social $social)
     {
-        $this->set('channel', $channel);
+        $this->set('channel', $this->channel = $channel);
         $this->social = $social;
     }
 
@@ -34,9 +40,14 @@ class ChannelMetaboxDriver extends MetaboxDriver
      */
     public function viewer(?string $view = null, array $data = [])
     {
+        $directory = $this->social->getResources()->path('/views/channel/metabox/' . $this->channel->getName());
+        if (!is_dir($directory)) {
+            $directory = $this->social->getResources()->path('/views/channel/metabox');
+        }
+
         if (!$this->viewer) {
             $this->viewer = View::getPlatesEngine(array_merge([
-                'directory' => $this->social->getResources()->path('/views/channel/metabox'),
+                'directory' => $directory,
                 'factory'   => MetaboxView::class,
                 'metabox'   => $this
             ], config('metabox.viewer', []), $this->get('viewer', [])));
