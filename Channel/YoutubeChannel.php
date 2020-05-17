@@ -3,7 +3,6 @@
 namespace tiFy\Plugins\Social\Channel;
 
 use tiFy\Support\Proxy\Url;
-use tiFy\Plugins\Social\Contracts\Social;
 
 class YoutubeChannel extends ChannelDriver
 {
@@ -11,13 +10,12 @@ class YoutubeChannel extends ChannelDriver
      * CONSTRUCTEUR.
      *
      * @param array $attrs Attributs de configuration.
-     * @param Social $social Instance du controleur principal.
      *
      * @return void
      */
-    public function __construct(array $attrs, Social $social)
+    public function __construct(array $attrs)
     {
-        parent::__construct('youtube', $attrs, $social);
+        parent::__construct('youtube', $attrs);
     }
 
     /**

@@ -4,7 +4,10 @@ namespace tiFy\Plugins\Social;
 
 use tiFy\Container\ServiceProvider;
 use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
-use tiFy\Plugins\Social\Partial\SocialMenu;
+use tiFy\Plugins\Social\Partial\{
+    SocialMenuPartial,
+    SocialSharePartial,
+};
 use tiFy\Plugins\Social\Channel\{
     DailymotionChannel,
     FacebookChannel,
@@ -82,7 +85,10 @@ class SocialServiceProvider extends ServiceProvider
                 }
             }
 
-            Partial::register('social-menu', new SocialMenu($social));
+            Partial::set([
+                'social-menu'  => (new SocialMenuPartial())->setSocial($social),
+                'social-share' => (new SocialSharePartial())->setSocial($social),
+            ]);
         });
     }
 
@@ -106,43 +112,43 @@ class SocialServiceProvider extends ServiceProvider
     public function registerChannels(): void
     {
         $this->getContainer()->add('social.channel.dailymotion', function (array $attrs): ChannelDriverContract {
-            return new DailymotionChannel($attrs, $this->getContainer()->get('social'));
+            return (new DailymotionChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.facebook', function (array $attrs): ChannelDriverContract {
-            return new FacebookChannel($attrs, $this->getContainer()->get('social'));
+            return (new FacebookChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.google-plus', function (array $attrs): ChannelDriverContract {
-            return new GooglePlusChannel($attrs, $this->getContainer()->get('social'));
+            return (new GooglePlusChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.instagram', function (array $attrs): ChannelDriverContract {
-            return new InstagramChannel($attrs, $this->getContainer()->get('social'));
+            return (new InstagramChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.linkedin', function (array $attrs): ChannelDriverContract {
-            return new LinkedinChannel($attrs, $this->getContainer()->get('social'));
+            return (new LinkedinChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.pinterest', function (array $attrs): ChannelDriverContract {
-            return new PinterestChannel($attrs, $this->getContainer()->get('social'));
+            return (new PinterestChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.twitter', function (array $attrs): ChannelDriverContract {
-            return new TwitterChannel($attrs, $this->getContainer()->get('social'));
+            return (new TwitterChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.viadeo', function (array $attrs): ChannelDriverContract {
-            return new ViadeoChannel($attrs, $this->getContainer()->get('social'));
+            return (new ViadeoChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.vimeo', function (array $attrs): ChannelDriverContract {
-            return new VimeoChannel($attrs, $this->getContainer()->get('social'));
+            return (new VimeoChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
 
         $this->getContainer()->add('social.channel.youtube', function (array $attrs): ChannelDriverContract {
-            return new YoutubeChannel($attrs, $this->getContainer()->get('social'));
+            return (new YoutubeChannel($attrs))->setSocial( $this->getContainer()->get('social'));
         });
     }
 }
