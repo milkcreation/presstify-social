@@ -2,22 +2,28 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
+use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
 use tiFy\Support\Proxy\Url;
-use tiFy\Plugins\Social\Contracts\Social;
 
 class TwitterChannel extends ChannelDriver
 {
     /**
+     * Url de partage et indicateur de partage possible sur le réseau.
+     * @see https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent
+     * @var string
+     */
+    protected $sharer = 'https://twitter.com/intent/tweet';
+
+    /**
      * CONSTRUCTEUR.
      *
      * @param array $attrs Attributs de configuration.
-     * @param Social $social Instance du controleur principal.
      *
      * @return void
      */
-    public function __construct(array $attrs, Social $social)
+    public function __construct(array $attrs)
     {
-        parent::__construct('twitter', $attrs, $social);
+        parent::__construct('twitter', $attrs);
     }
 
     /**
@@ -35,5 +41,18 @@ class TwitterChannel extends ChannelDriver
         }
 
         return '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPostShare($post): ChannelDriverContract
+    {
+        $this->share_params = [
+            'text' => str_replace('|', '', strip_tags($post->getTitle())),
+            'url'  => $post->getPermalink(),
+        ];
+
+        return $this;
     }
 }

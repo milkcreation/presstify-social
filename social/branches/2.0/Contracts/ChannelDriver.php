@@ -3,7 +3,12 @@
 namespace tiFy\Plugins\Social\Contracts;
 
 use tiFy\Contracts\{Support\ParamsBag, View\PlatesEngine};
+use tiFy\Plugins\Social\SocialAwareTrait;
+use tiFy\Wordpress\Contracts\Query\QueryPost;
 
+/**
+ * @mixin SocialAwareTrait
+ */
 interface ChannelDriver extends ParamsBag
 {
     /**
@@ -70,6 +75,15 @@ interface ChannelDriver extends ParamsBag
     public function getOptionNameKey(): string;
 
     /**
+     * Récupération de l'url de partage.
+     *
+     * @param array|null $params Liste des paramètres de partage.
+     *
+     * @return string
+     */
+    public function getShareUrl(?array $params = null): string;
+
+    /**
      * Récupération du statut d'affichage du réseau.
      *
      * @return string online|warning|offline
@@ -82,6 +96,13 @@ interface ChannelDriver extends ParamsBag
      * @return bool
      */
     public function hasAdmin(): bool;
+
+    /**
+     * Vérification d'activation de partage.
+     *
+     * @return bool
+     */
+    public function hasShare(): bool;
 
     /**
      * Vérification de l'existance d'une url vers la page du compte du réseau.
@@ -119,6 +140,13 @@ interface ChannelDriver extends ParamsBag
     public function isIOS(): bool;
 
     /**
+     * Indique si le partage est possible sur le réseau.
+     *
+     * @return bool
+     */
+    public function isSharer(): bool;
+
+    /**
      * Lien vers la page de profil du réseau social.
      *
      * @param array $attrs Liste des attributs de configuration du lien.
@@ -126,6 +154,15 @@ interface ChannelDriver extends ParamsBag
      * @return string
      */
     public function pageLink(array $attrs = []): string;
+
+    /**
+     * Définition des paramètres de partage d'une publication.
+     *
+     * @param QueryPost $post
+     *
+     * @return static
+     */
+    public function setPostShare(QueryPost $post): ChannelDriver;
 
     /**
      * Instance du gestionnaire de gabarits d'affichage ou instance du gabarit d'affichage.

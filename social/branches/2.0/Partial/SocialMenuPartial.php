@@ -4,28 +4,19 @@ namespace tiFy\Plugins\Social\Partial;
 
 use Illuminate\Support\Collection;
 use tiFy\Contracts\Partial\PartialDriver as PartialDriverContract;
-use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social};
+use tiFy\Plugins\Social\SocialAwareTrait;
+use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract};
 use tiFy\Partial\PartialDriver;
 
-class SocialMenu extends PartialDriver
+class SocialMenuPartial extends PartialDriver
 {
-    /**
-     * Instance du gestionnaire de réseaux sociaux.
-     * @var Social
-     */
-    protected $social;
+    use SocialAwareTrait;
 
     /**
-     * CONSTRUCTEUR.
-     *
-     * @param Social $social
-     *
-     * @return void
+     * Alias de qualification dans le gestionnaire.
+     * @var string
      */
-    public function __construct(Social $social)
-    {
-        $this->social = $social;
-    }
+    private $alias = 'social-menu';
 
     /**
      * @inheritDoc
@@ -35,7 +26,7 @@ class SocialMenu extends PartialDriver
         parent::boot();
 
         $this->set(
-            'viewer.directory', $this->social->getResources()->path('/views/partial/menu')
+            'viewer.directory', $this->social()->getResources()->path('/views/partial/menu')
         );
     }
 
@@ -44,11 +35,11 @@ class SocialMenu extends PartialDriver
      */
     public function defaults(): array
     {
-        return [
+        return array_merge(parent::defaults(), [
             'classes' => [
 
             ]
-        ];
+        ]);
     }
 
     /**
@@ -78,7 +69,7 @@ class SocialMenu extends PartialDriver
     {
         if (!$this->get('items', [])) {
             $this->set([
-                'items' => (new Collection($this->social->getChannels()))
+                'items' => (new Collection($this->social()->getChannels()))
                     ->filter(function (ChannelDriverContract $channel) {
                         return $channel->isActive() && $channel->hasUri();
                     })

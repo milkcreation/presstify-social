@@ -2,13 +2,15 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-use tiFy\Plugins\Social\Contracts\{ChannelDriver, Social};
-use tiFy\Metabox\MetaboxDriver;
-use tiFy\Metabox\MetaboxView;
+use tiFy\Plugins\Social\SocialAwareTrait;
+use tiFy\Plugins\Social\Contracts\ChannelDriver;
+use tiFy\Metabox\{MetaboxDriver, MetaboxView};
 use tiFy\Support\Proxy\View;
 
 class ChannelMetaboxDriver extends MetaboxDriver
 {
+    use SocialAwareTrait;
+
     /**
      * Instance du réseau associé.
      * @var ChannelDriver
@@ -16,23 +18,15 @@ class ChannelMetaboxDriver extends MetaboxDriver
     protected $channel;
 
     /**
-     * Instance du gestionnaire des réseaux.
-     * @var Social
-     */
-    protected $social;
-
-    /**
      * CONSTRUCTEUR.
      *
      * @param ChannelDriver $channel Instance du réseau associé.
-     * @param Social $social Instance du gestionnaire des réseaux.
      *
      * @return void
      */
-    public function __construct(ChannelDriver $channel, Social $social)
+    public function __construct(ChannelDriver $channel)
     {
         $this->set('channel', $this->channel = $channel);
-        $this->social = $social;
     }
 
     /**
@@ -40,9 +34,10 @@ class ChannelMetaboxDriver extends MetaboxDriver
      */
     public function viewer(?string $view = null, array $data = [])
     {
-        $directory = $this->social->getResources()->path('/views/channel/metabox/' . $this->channel->getName());
+        $social = $this->channel->social();
+        $directory = $social->getResources()->path('/views/admin/metabox/' . $this->channel->getName());
         if (!is_dir($directory)) {
-            $directory = $this->social->getResources()->path('/views/channel/metabox');
+            $directory = $social->getResources()->path('/views/admin/metabox');
         }
 
         if (!$this->viewer) {

@@ -4,8 +4,7 @@
  * @var tiFy\Plugins\Social\Contracts\ChannelDriver $channel
  */
 ?>
-<table class="form-table">
-    <tbody>
+<table class="Form-table">
     <tr>
         <th>
             <?php _e('Activation de la prise en charge du réseau.', 'tify'); ?><br>
@@ -17,10 +16,8 @@
             ]); ?>
         </td>
     </tr>
-    </tbody>
 </table>
-<table class="form-table">
-    <tbody>
+<table class="Form-table">
     <tr>
         <th>
             <?php _e('Url vers la page du compte.', 'tify'); ?><br>
@@ -65,6 +62,23 @@
             </em>
         </td>
     </tr>
+</table>
+<?php if ($channel->isSharer()) : ?>
+    <table class="Form-table">
+        <tr>
+            <th>
+                <?php _e('Permettre le partage de publication du site sur ce réseau.', 'tify'); ?><br>
+            </th>
+            <td>
+                <?php echo field('toggle-switch', [
+                    'name'  => $this->name() . '[share]',
+                    'value' => filter_var($this->value('share'), FILTER_VALIDATE_BOOLEAN) ? 'on' : 'off',
+                ]); ?>
+            </td>
+        </tr>
+    </table>
+<?php endif; ?>
+<table class="Form-table">
     <tr>
         <th>
             <?php _e('Ordre d\'affichage.', 'tify'); ?><br>
@@ -79,5 +93,4 @@
             ]); ?>
         </td>
     </tr>
-    </tbody>
 </table>

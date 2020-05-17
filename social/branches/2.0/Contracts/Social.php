@@ -10,6 +10,9 @@ interface Social
     /**
      * Ajout d'un réseau à liste des réseaux déclarés.
      *
+     * @param string $name
+     * @param string|array|ChannelDriver
+     *
      * @return ChannelDriver
      *
      * @throws InvalidArgumentException

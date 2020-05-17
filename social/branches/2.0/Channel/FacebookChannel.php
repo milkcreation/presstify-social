@@ -2,21 +2,26 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-use tiFy\Plugins\Social\Contracts\Social;
+use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
 
 class FacebookChannel extends ChannelDriver
 {
     /**
+     * Url de partage et indicateur de partage possible sur le réseau.
+     * @var string
+     */
+    protected $sharer = 'https://www.facebook.com/sharer.php';
+
+    /**
      * CONSTRUCTEUR.
      *
      * @param array $attrs Attributs de configuration.
-     * @param Social $social Instance du controleur principal.
      *
      * @return void
      */
-    public function __construct(array $attrs, Social $social)
+    public function __construct(array $attrs)
     {
-        parent::__construct('facebook', $attrs, $social);
+        parent::__construct('facebook', $attrs);
     }
 
     /**
@@ -33,5 +38,17 @@ class FacebookChannel extends ChannelDriver
         }
 
         return '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPostShare($post): ChannelDriverContract
+    {
+        $this->share_params = [
+            'u' => $post->getPermalink()
+        ];
+
+        return $this;
     }
 }

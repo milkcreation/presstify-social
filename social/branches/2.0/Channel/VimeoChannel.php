@@ -2,20 +2,17 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-use tiFy\Plugins\Social\Contracts\Social;
-
 class VimeoChannel extends ChannelDriver
 {
     /**
      * CONSTRUCTEUR.
      *
      * @param array $attrs Attributs de configuration.
-     * @param Social $social Instance du controleur principal.
      *
      * @return void
      */
-    public function __construct(array $attrs, Social $social)
+    public function __construct(array $attrs)
     {
-        parent::__construct('vimeo', $attrs, $social);
+        parent::__construct('vimeo', $attrs);
     }
 }

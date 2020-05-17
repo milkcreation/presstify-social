@@ -4,13 +4,15 @@ namespace tiFy\Plugins\Social\Channel;
 
 use Detection\MobileDetect;
 use tiFy\Contracts\View\Engine as ViewEngine;
-use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract, Social};
+use tiFy\Plugins\Social\SocialAwareTrait;
+use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
 use tiFy\Support\ParamsBag;
-use tiFy\Support\Proxy\Metabox;
-use tiFy\Support\Proxy\View;
+use tiFy\Support\Proxy\{Metabox, Url, View};
 
 class ChannelDriver extends ParamsBag implements ChannelDriverContract
 {
+    use SocialAwareTrait;
+
     /**
      * Nom de qualification.
      * @var string
@@ -18,10 +20,18 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     protected $name = '';
 
     /**
-     * Instance du gestionnaire.
-     * @var Social
+     * Url de partage et indicateur de partage possible sur le réseau.
+     * @see https://css-tricks.com/simple-social-sharing-links/
+     * @see https://jonsuh.com/blog/social-share-links/
+     * @var string
      */
-    protected $social;
+    protected $sharer = '';
+
+    /**
+     * Paramètre de partage.
+     * @var array
+     */
+    protected $share_params = [];
 
     /**
      * Instance du gestionnaire de gabarits d'affichage.
@@ -34,14 +44,12 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      *
      * @param string Nom de qualification.
      * @param array $attrs Attributs de configuration.
-     * @param Social $social Instance du controleur principal.
      *
      * @return void
      */
-    public function __construct(string $name, array $attrs, Social $social)
+    public function __construct(string $name, array $attrs)
     {
         $this->name = $name;
-        $this->social = $social;
 
         $this->set($attrs);
     }
@@ -76,6 +84,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
             'page_link_attrs' => [],
             'option_name'     => $this->getOptionName(),
             'order'           => 0,
+            'share'           => false,
             'title'           => ucfirst($this->name),
             'uri'             => '',
         ];
@@ -94,7 +103,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function getIcon(): string
     {
-        return $this->get('icon') ?: $this->social->getResources("/assets/channel/{$this->getName()}/img/icon.svg");
+        return $this->get('icon') ?: $this->social->getResources("/assets/images/channel/{$this->getName()}/icon.svg");
     }
 
     /**
@@ -140,6 +149,19 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
+    public function getShareUrl(?array $params = null): string
+    {
+        if (is_null($params) && empty($this->share_params)) {
+            return '';
+        }
+
+        return $this->sharer
+            ? Url::set($this->sharer)->with(array_merge($this->share_params, $params ?: []))->render() : '';
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getStatus(): string
     {
         return $this->isActive() && $this->hasUri() ? 'online' : ($this->isActive() ? 'warning' : 'offline');
@@ -159,6 +181,14 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     public function hasAdmin(): bool
     {
         return $this->get('admin', true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasShare(): bool
+    {
+        return $this->isSharer() && filter_var($this->get('share'), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -201,6 +231,14 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     public function isIOS(): bool
     {
         return (new MobileDetect())->is('iOS');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isSharer(): bool
+    {
+        return !!$this->sharer;
     }
 
     /**
@@ -265,7 +303,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
         if ($this->hasAdmin()) {
             Metabox::add("Social-{$this->getName()}", [
                 'name'   => $this->getOptionName(),
-                'driver' => new ChannelMetaboxDriver($this, $this->social),
+                'driver' => new ChannelMetaboxDriver($this),
                 'parent' => 'Social',
                 'title'  => $this->getTitle(),
                 'value'  => $this->all(),
@@ -278,11 +316,19 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
+    public function setPostShare($post): ChannelDriverContract
+    {
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function view(?string $name = null, array $data = [])
     {
         if (is_null($this->view)) {
             $this->view = View::getPlatesEngine(array_merge([
-                'directory' => $this->social->getResources()->path('/views/channel'),
+                'directory' => $this->social->getResources()->path('/views/app'),
                 'factory'   => ChannelView::class,
                 'channel'   => $this,
             ], $this->get('viewer', [])));

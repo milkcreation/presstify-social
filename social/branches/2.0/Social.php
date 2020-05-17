@@ -14,23 +14,20 @@ use tiFy\Support\Proxy\View;
  * @desc Extension PresstiFy de gestion des réseaux sociaux.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Social
- * @version 2.0.24
+ * @version 2.0.25
  *
  * USAGE :
  * Activation
  * ---------------------------------------------------------------------------------------------------------------------
- * Dans config/app.php ajouter \tiFy\Plugins\Social\SocialServiceProvider à la liste des fournisseurs de services.
- * ex.
+ * Dans config/app.php
+ * >> ajouter SocialServiceProvider à la liste des fournisseurs de services.
  * <?php
- * ...
- * use tiFy\Plugins\Social\SocialServiceProvider;
- * ...
  *
  * return [
  *      ...
  *      'providers' => [
  *          ...
- *          SocialServiceProvider::class
+ *          tiFy\Plugins\Social\SocialServiceProvider::class
  *          ...
  *      ]
  * ];
@@ -103,7 +100,7 @@ class Social implements SocialContract
         } elseif (is_string($driver) && $this->getContainer()) {
             $channel = $this->getContainer()->get("social.channel.{$driver}", [$attrs]);
         } else {
-            $channel = new ChannelDriver($name, $attrs, $this);
+            $channel = (new ChannelDriver($name, $attrs))->setSocial($this);
         }
 
         if ($driver instanceof ChannelDriverContract) {
