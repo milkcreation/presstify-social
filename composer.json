@@ -1,6 +1,6 @@
 {
   "name": "presstify-plugins/social",
-  "description": "Gestion des réseaux sociaux",
+  "description": "Extension PresstiFy de gestion des réseaux sociaux.",
   "type": "presstify-plugin",
   "keywords": [
     "presstify",
@@ -8,8 +8,8 @@
     "wordpress",
     "social"
   ],
-  "homepage": "https://svn.milkcreation.fr/presstify-plugins/social",
-  "time": "2018-08-20",
+  "homepage": "https://svn.tigreblanc.fr/presstify-plugins/social",
+  "time": "2020-08-24",
   "license": "proprietary",
   "authors": [
     {
@@ -21,12 +21,13 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "http://composer.tigreblanc.fr/presstify/"
+      "url": "https://composer.tigreblanc.fr/presstify"
     }
   ],
   "require": {
     "composer/installers": "~1.0",
-    "presstify/framework": "^1.4"
+    "hybridauth/hybridauth": "~3.0",
+    "presstify/framework": ">=1.4"
   },
   "autoload": {
     "psr-4": {
@@ -35,9 +36,10 @@
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "config" : {
+  "config": {
+    "optimize-autoloader": true,
     "preferred-install": "dist",
-    "sort-packages": true,
-    "optimize-autoloader": true
+    "secure-http": false,
+    "sort-packages": true
   }
 }
