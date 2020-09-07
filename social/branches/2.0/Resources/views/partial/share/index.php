@@ -7,9 +7,9 @@
 ?>
 <?php if ($items = $this->get('items', [])) : ?>
     <nav <?php echo $this->htmlAttrs($this->get('attrs', [])); ?>>
-        <ul class="Social-shareChannels">
+        <ul class="SocialShare-channels">
             <?php foreach ($items as $item) : ?>
-                <li class="Social-shareChannel Social-shareChannel--<?php echo $item->getName(); ?>">
+                <li class="SocialShare-channel SocialShare-channel--<?php echo $item->getName(); ?>">
                     <?php $this->insert('item', compact('item', 'post')); ?>
                 </li>
             <?php endforeach; ?>

@@ -6,7 +6,7 @@
  */
 echo partial('tag', [
     'attrs'   => [
-        'class'        => 'Social-shareChannelLink Social-shareChannelLink--' . $item->getName(),
+        'class'        => 'SocialShare-channelLink SocialShare-channelLink--' . $item->getName(),
         'data-control' => 'social.share',
         'href'         => $item->getShareUrl($this->get("channel.{$item->getName()}", [])),
         'rel'          => 'nofollow noopener noreferrer',
