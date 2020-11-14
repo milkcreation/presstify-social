@@ -34,7 +34,7 @@
   },
   "autoload": {
     "psr-4": {
-      "tiFy\\Plugins\\Social\\": ""
+      "tiFy\\Plugins\\Social\\": "src"
     }
   },
   "autoload-dev": {
