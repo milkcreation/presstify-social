@@ -1,16 +1,16 @@
 {
   "name": "presstify-plugins/social",
-  "description": "Gestion des réseaux sociaux",
-  "type": "presstify-plugin",
+  "description": "Extension PresstiFy de gestion des réseaux sociaux.",
+  "homepage": "https://svn.tigreblanc.fr/presstify-plugins/social",
   "keywords": [
     "presstify",
     "plugins",
     "wordpress",
     "social"
   ],
-  "homepage": "https://svn.milkcreation.fr/presstify-plugins/social",
-  "time": "2018-08-20",
-  "license": "proprietary",
+  "type": "presstify-plugin",
+  "time": "2020-11-15",
+  "license": "MIT",
   "authors": [
     {
       "name": "Jordy Manner",
@@ -21,23 +21,32 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "http://composer.tigreblanc.fr/presstify/"
+      "url": "https://composer.tigreblanc.fr/presstify"
     }
   ],
   "require": {
     "composer/installers": "~1.0",
-    "presstify/framework": "^1.4"
+    "hybridauth/hybridauth": "~3.0",
+    "presstify/framework": ">=1.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
   },
   "autoload": {
     "psr-4": {
-      "tiFy\\Plugins\\Social\\": ""
+      "tiFy\\Plugins\\Social\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "tiFy\\Plugins\\Social\\Test\\": "tests"
     }
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "config" : {
+  "config": {
+    "optimize-autoloader": true,
     "preferred-install": "dist",
-    "sort-packages": true,
-    "optimize-autoloader": true
+    "sort-packages": true
   }
 }
