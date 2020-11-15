@@ -3,7 +3,7 @@
 namespace tiFy\Plugins\Social;
 
 use Exception;
-use tiFy\Plugins\Social\Contracts\Social;
+use tiFy\Plugins\Social\Contracts\Social as SocialContract;
 
 trait SocialAwareTrait
 {
@@ -34,11 +34,11 @@ trait SocialAwareTrait
     /**
      * Définition du gestionnaire de réseaux sociaux.
      *
-     * @param Social $social
+     * @param SocialContract $social
      *
      * @return static
      */
-    public function setSocial(Social $social): self
+    public function setSocial(SocialContract $social): self
     {
         $this->social = $social;
 

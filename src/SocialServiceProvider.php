@@ -124,7 +124,7 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function registerChannelView(): void
     {
-        $this->getContainer()->share('social.view', function () {
+        $this->getContainer()->share('social.channel-view', function () {
             /** @var SocialContract $social */
             $social = $this->getContainer()->get('social');
 
