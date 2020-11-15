@@ -106,7 +106,8 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function getIcon(): string
     {
-        return $this->get('icon') ?: $this->social()->resources("/assets/dist/img/channel/{$this->getName()}/icon.svg");
+        return $this->get('icon')
+            ?: call_user_func($this->social()->resources(), "/assets/dist/img/channel/{$this->getName()}/icon.svg");
     }
 
     /**
@@ -347,7 +348,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
                 $this->view->setDirectory($directory);
             }
 
-            $this->view->set(array_merge($this->get('view', []), ['channel' => $this]));
+            $this->view->params(array_merge($this->get('view', []), ['channel' => $this]));
         }
 
         if (func_num_args() === 0) {

@@ -166,7 +166,7 @@ class Social implements SocialContract
 
 
             $registered = [];
-            if ($channels = $this->config('social.channel', [])) {
+            if ($channels = $this->config('channel', [])) {
                 foreach ($channels as $k => $v) {
                     $registered[] = is_numeric($k) ? $v : $k;
                 }
