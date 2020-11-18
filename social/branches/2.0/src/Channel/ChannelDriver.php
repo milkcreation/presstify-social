@@ -289,6 +289,10 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
                 $params->set('attrs.target', '_blank');
             }
 
+            if (!$params->has('attrs.rel')) {
+                $params->set('attrs.rel', 'noreferrer');
+            }
+
             return $this->view('page-link', $params->all());
         }
     }
