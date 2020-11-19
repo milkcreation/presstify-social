@@ -1,6 +1,6 @@
 # Social PresstiFy Plugin
 
-[![Latest Version](https://img.shields.io/badge/release-2.0.30-blue?style=for-the-badge)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.0)
+[![Latest Version](https://img.shields.io/badge/release-2.0.31-blue?style=for-the-badge)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.31)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE.md)
 
 **Social** offers a large collection of social media channels.
