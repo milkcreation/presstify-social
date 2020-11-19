@@ -6,6 +6,7 @@ use Detection\MobileDetect;
 use tiFy\Contracts\View\PlatesEngine;
 use tiFy\Contracts\View\Engine as ViewEngine;
 use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Plugins\Social\Metabox\ChannelMetabox;
 use tiFy\Plugins\Social\SocialAwareTrait;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Metabox;
@@ -308,10 +309,12 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
             $this->attributes = array_merge($this->attributes, $opts[$this->getOptionNameKey()] ?? []);
         }
 
+        Metabox::registerDriver("social.channel.{$this->getName()}", (new ChannelMetabox())->setChannel($this));
+
         if ($this->hasAdmin()) {
             Metabox::add("Social-{$this->getName()}", [
                 'name'   => $this->getOptionName(),
-                'driver' => new ChannelMetaboxDriver($this),
+                'driver' => "social.channel.{$this->getName()}",
                 'parent' => 'Social',
                 'title'  => $this->getTitle(),
                 'value'  => $this->all(),

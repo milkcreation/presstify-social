@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Contracts\Metabox\MetaboxView $this
+ * @var tiFy\Plugins\Social\Metabox\ChannelMetaboxView $this
  * @var tiFy\Plugins\Social\Contracts\ChannelDriver $channel
  */
 ?>
@@ -37,7 +37,7 @@
         </td>
     </tr>
 </table>
-<?php if ($channel->isSharer()) : ?>
+<?php if ($this->isSharer()) : ?>
 <table class="Form-table">
     <tr>
         <th>
