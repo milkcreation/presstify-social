@@ -17,6 +17,18 @@ class ChannelMetabox extends MetaboxDriver
     protected $channel;
 
     /**
+     * @inheritDoc
+     */
+    public function defaults(): array
+    {
+        return array_merge(parent::defaults(), [
+            'name'     => $this->channel->getOptionName(),
+            'title'    => $this->channel->getTitle(),
+            'value'    => $this->channel->all()
+        ]);
+    }
+
+    /**
      * Définition du réseau associé
      *
      * @param ChannelDriver $channel
