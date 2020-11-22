@@ -12,7 +12,7 @@ use tiFy\Contracts\View\Engine as ViewEngine;
 interface Social
 {
     /**
-     * Récupération de l'instance de l'extension gestion d'optimisation.
+     * Récupération de l'instance.
      *
      * @return static
      *
@@ -33,7 +33,7 @@ interface Social
     public function addChannel(string $name, $attrs): ChannelDriver;
 
     /**
-     * Initialisation du gestionnaire d'optimisation.
+     * Chargement.
      *
      * @return static
      */
@@ -92,7 +92,7 @@ interface Social
     public function getProvider(string $name);
 
     /**
-     * Résolution de service fourni par le gestionnaire d'abonnments.
+     * Résolution de service fourni par le gestionnaire.
      *
      * @param string $alias
      *
@@ -101,7 +101,7 @@ interface Social
     public function resolve(string $alias);
 
     /**
-     * Vérification de résolution possible d'un service fourni par le gestionnaire d'abonnments.
+     * Vérification de résolution possible d'un service fourni par le gestionnaire.
      *
      * @param string $alias
      *

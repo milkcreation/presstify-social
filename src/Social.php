@@ -26,7 +26,7 @@ class Social implements SocialContract
     private static $instance;
 
     /**
-     * Indicateur d'initialisation.
+     * Indicateur de chargement.
      * @var bool
      */
     private $booted = false;
@@ -111,7 +111,7 @@ class Social implements SocialContract
             return self::$instance;
         }
 
-        throw new Exception('Unavailable Social instance');
+        throw new Exception(sprintf('Unavailable %s instance', __CLASS__));
     }
 
     /**
@@ -159,11 +159,12 @@ class Social implements SocialContract
     public function boot(): SocialContract
     {
         if (!$this->booted) {
-            Metabox::add('Social', [
-                'name'  => 'tify_social_share',
-                'title' => __('Réseaux sociaux', 'tify'),
-            ])->setScreen('tify_options@options')->setContext('tab');
-
+            if ($this->config('admin', true)) {
+                Metabox::add('Social', [
+                    'name'  => 'tify_social_share',
+                    'title' => __('Réseaux sociaux', 'tify'),
+                ])->setScreen('tify_options@options')->setContext('tab');
+            }
 
             $registered = [];
             if ($channels = $this->config('channel', [])) {

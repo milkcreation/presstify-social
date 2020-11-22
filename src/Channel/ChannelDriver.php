@@ -185,7 +185,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function hasAdmin(): bool
     {
-        return $this->get('admin', true);
+        return $this->social()->config('admin', true) && $this->get('admin', true);
     }
 
     /**
@@ -313,11 +313,8 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
 
         if ($this->hasAdmin()) {
             Metabox::add("Social-{$this->getName()}", [
-                'name'   => $this->getOptionName(),
                 'driver' => "social.channel.{$this->getName()}",
-                'parent' => 'Social',
-                'title'  => $this->getTitle(),
-                'value'  => $this->all(),
+                'parent' => 'Social'
             ])->setScreen('tify_options@options')->setContext('tab');
         }
 

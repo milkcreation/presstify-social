@@ -46,11 +46,9 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (($wp = $this->getContainer()->get('wp')) && $wp->is()) {
-            add_action('after_setup_theme', function () {
-                $this->getContainer()->get('social')->boot();
-            });
-        }
+        events()->listen('wp.booted', function () {
+            $this->getContainer()->get('social')->boot();
+        });
     }
 
     /**
