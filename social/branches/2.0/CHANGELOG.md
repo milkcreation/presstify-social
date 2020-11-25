@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v2.0.32 (2020-11-25)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.32...v2.0.32)
+
+### Fixed 
+
+- Récupération des valeurs depuis la Metabox 
+
 ## [v2.0.31 (2020-11-22)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.31...v2.0.31)
 
 ### Changed

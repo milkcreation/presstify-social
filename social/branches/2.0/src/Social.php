@@ -161,7 +161,6 @@ class Social implements SocialContract
         if (!$this->booted) {
             if ($this->config('admin', true)) {
                 Metabox::add('Social', [
-                    'name'  => 'tify_social_share',
                     'title' => __('Réseaux sociaux', 'tify'),
                 ])->setScreen('tify_options@options')->setContext('tab');
             }

@@ -23,9 +23,16 @@ class ChannelMetabox extends MetaboxDriver
     {
         return array_merge(parent::defaults(), [
             'name'     => $this->channel->getOptionName(),
-            'title'    => $this->channel->getTitle(),
-            'value'    => $this->channel->all()
+            'title'    => $this->channel->getTitle()
         ]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function defaultValue(): array
+    {
+        return $this->channel->all();
     }
 
     /**
