@@ -12,7 +12,7 @@
         <td>
             <?php echo field('toggle-switch', [
                 'name'  => $this->name() . '[active]',
-                'value' => $this->value('active') ? 'on' : 'off',
+                'value' => filter_var($this->value('active'), FILTER_VALIDATE_BOOLEAN) ? 'on' : 'off',
             ]); ?>
         </td>
     </tr>

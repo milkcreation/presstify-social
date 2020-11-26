@@ -159,6 +159,8 @@ class Social implements SocialContract
     public function boot(): SocialContract
     {
         if (!$this->booted) {
+            register_setting('tify_options', 'tify_social_share');
+
             if ($this->config('admin', true)) {
                 Metabox::add('Social', [
                     'title' => __('Réseaux sociaux', 'tify'),
@@ -184,6 +186,7 @@ class Social implements SocialContract
                 }
             }
 
+            //var_dump(get_option('tify_social_share')); exit;
             Partial::register('social-menu', (new SocialMenuPartial())->setSocial($this));
             Partial::register('social-share', (new SocialSharePartial())->setSocial($this));
 
