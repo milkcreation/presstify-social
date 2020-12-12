@@ -2,19 +2,23 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
+use Exception, BadMethodCallException;
 use Detection\MobileDetect;
-use tiFy\Contracts\View\PlatesEngine;
 use tiFy\Contracts\View\Engine as ViewEngine;
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Plugins\Social\Contracts\Social as SocialManagerContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver as SocialChannelDriverContract;
 use tiFy\Plugins\Social\Metabox\ChannelMetabox;
 use tiFy\Plugins\Social\SocialAwareTrait;
+use tiFy\Support\Concerns\BootableTrait;
+use tiFy\Support\Concerns\ParamsBagTrait;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Metabox;
 use tiFy\Support\Proxy\Url;
+use tiFy\Support\Proxy\View;
 
-class ChannelDriver extends ParamsBag implements ChannelDriverContract
+class SocialChannelDriver implements SocialChannelDriverContract
 {
-    use SocialAwareTrait;
+    use BootableTrait, ParamsBagTrait, SocialAwareTrait;
 
     /**
      * Nom de qualification.
@@ -38,59 +42,104 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
 
     /**
      * Instance du gestionnaire de gabarits d'affichage.
-     * @var PlatesEngine|ViewEngine
+     * @var ViewEngine
      */
-    protected $view;
+    protected $viewEngine;
 
     /**
-     * @param string|null Nom de qualification.
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * @param SocialManagerContract $socialManager
      */
-    public function __construct(?string $name = null, array $attrs = [])
+    public function __construct(SocialManagerContract $socialManager)
     {
-        if (!is_null($name)) {
-            $this->setName($name);
-        }
-
-        $this->set($attrs);
+        $this->setSocialManager($socialManager);
     }
 
     /**
      * @inheritDoc
      */
-    public function boot(): void { }
+    public function __get(string $key)
+    {
+        return $this->params($key);
+    }
 
     /**
-     * Liste des attributs de configuration par défaut.
-     *
-     * @return array {
-     * @var bool $active Activation de la prise en charge.
-     * @var bool $admin Activation de l'administrabilité.
-     * @var bool $deeplink Activation de gestion de lien profond.
-     * @var string $icon Icone représentative.
-     * @var array page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
-     * @var string $option_name Nom d'enregistrement des attributs en base.
-     * @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
-     * @var string $title Intitulé de qualification du réseau.
-     * @var string $uri Lien vers la page du compte
-     * }
+     * @inheritDoc
      */
-    public function defaults(): array
+    public function __call(string $method, array $arguments)
+    {
+        try {
+            return $this->params()->{$method}(...$arguments);
+        } catch(Exception $e) {
+            throw new BadMethodCallException(sprintf(
+                'SocialChannelDriver [%s] method call [%s] throws an exception: %s',
+                $this->getName(), $method, $e->getMessage()
+            ));
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function boot(): SocialChannelDriverContract
+    {
+        if (!$this->isBooted()) {
+            $this->parseParams();
+
+            $this->setBooted();
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function defaultParams(): array
     {
         return [
+            /**
+             * @var bool $active Activation de la prise en charge.
+             */
             'active'          => false,
+            /**
+             * @var bool $admin Activation de l'administrabilité.
+             */
             'admin'           => true,
+            /**
+             * @var bool $deeplink Activation de gestion de lien profond.
+             */
             'deeplink'        => true,
+            /**
+             * @var string $icon Icone représentative.
+             */
             'icon'            => '',
+            /**
+             * @var array $page_link_attrs Liste des attributs de configuration du lien vers la page du compte.
+             */
             'page_link_attrs' => [],
+            /**
+             * @var string $option_name Nom d'enregistrement des attributs en base.
+             */
             'option_name'     => $this->getOptionName(),
+            /**
+             * @var int $order Ordre d'affichage du lien vers la page du compte dans le menu.
+             */
             'order'           => 0,
+            /**
+             *
+             */
             'share'           => false,
-            'title'           => ucfirst($this->name),
+            /**
+             * @var string $title Intitulé de qualification du réseau.
+             */
+            'title'           => ucfirst($this->getName()),
+            /**
+             * @var string $uri Lien vers la page du compte
+             */
             'uri'             => '',
-            'view'            => []
+            /**
+             * @var array $viewer Liste des attributs de configuration du pilote d'affichage.
+             */
+            'viewer'            => []
         ];
     }
 
@@ -108,7 +157,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     public function getIcon(): string
     {
         return $this->get('icon')
-            ?: call_user_func($this->social()->resources(), "/assets/dist/img/channel/{$this->getName()}/icon.svg");
+            ?: call_user_func($this->socialManager()->resources(), "/assets/dist/img/channel/{$this->getName()}/icon.svg");
     }
 
     /**
@@ -124,7 +173,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function getPageUrl(): string
     {
-        return $this->get('uri', '');
+        return (string)$this->get('uri');
     }
 
     /**
@@ -185,7 +234,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function hasAdmin(): bool
     {
-        return $this->social()->config('admin', true) && $this->get('admin', true);
+        return $this->socialManager()->config('admin', true) && $this->get('admin', true);
     }
 
     /**
@@ -201,7 +250,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function hasUri(): bool
     {
-        return !empty($this->get('uri', ''));
+        return !empty($this->get('uri'));
     }
 
     /**
@@ -301,12 +350,10 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
-    public function parse(): ChannelDriverContract
+    public function parseParams(): self
     {
-        parent::parse();
-
-        if ($opts = get_option('tify_social_share')) {
-            $this->attributes = array_merge($this->attributes, $opts[$this->getOptionNameKey()] ?? []);
+        if ($params = get_option('tify_social_share')) {
+            $this->params($params[$this->getOptionNameKey()] ?? []);
         }
 
         Metabox::registerDriver("social.channel.{$this->getName()}", (new ChannelMetabox())->setChannel($this));
@@ -324,7 +371,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
-    public function setName(string $name): ChannelDriverContract
+    public function setName(string $name): SocialChannelDriverContract
     {
         $this->name = $name;
 
@@ -334,7 +381,7 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
     /**
      * @inheritDoc
      */
-    public function setPostShare($post): ChannelDriverContract
+    public function setPostShare($post): SocialChannelDriverContract
     {
         return $this;
     }
@@ -344,21 +391,22 @@ class ChannelDriver extends ParamsBag implements ChannelDriverContract
      */
     public function view(?string $name = null, array $data = [])
     {
-        if (is_null($this->view)) {
-            $this->view = $this->social()->resolve('channel-view');
+        if (is_null($this->viewEngine)) {
+            $this->viewEngine = $this->socialManager()->containerHas('social.channel.view-engine')
+                ? $this->socialManager()->containerGet('social.channel.view-engine') : View::getPlatesEngine();
 
-            $directory = $this->social()->resources('/views/channel/' . $this->getName());
+            $directory = $this->socialManager()->resources('/views/channel/' . $this->getName());
             if (is_dir($directory)) {
-                $this->view->setDirectory($directory);
+                $this->viewEngine->setDirectory($directory);
             }
 
-            $this->view->params(array_merge($this->get('view', []), ['channel' => $this]));
+            $this->viewEngine->params(array_merge($this->get('viewer', []), ['channel' => $this]));
         }
 
         if (func_num_args() === 0) {
-            return $this->view;
+            return $this->viewEngine;
         }
 
-        return $this->view->render($name, $data);
+        return $this->viewEngine->render($name, $data);
     }
 }

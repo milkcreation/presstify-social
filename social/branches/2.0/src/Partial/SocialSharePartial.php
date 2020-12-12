@@ -3,53 +3,48 @@
 namespace tiFy\Plugins\Social\Partial;
 
 use Illuminate\Support\Collection;
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
-use tiFy\Plugins\Social\SocialAwareTrait;
-use tiFy\Partial\PartialDriver;
+use tiFy\Contracts\Partial\PartialDriver as PartialDriverContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver;
+use tiFy\Plugins\Social\Contracts\SocialSharePartial as SocialSharePartialContract;
 use tiFy\Wordpress\Query\QueryPost;
 
-class SocialSharePartial extends PartialDriver
+class SocialSharePartial extends AbstractSocialPartialDriver implements SocialSharePartialContract
 {
-    use SocialAwareTrait;
-
-    /**
-     * Alias de qualification dans le gestionnaire.
-     * @var string
-     */
-    private $alias = 'social-share';
-
     /**
      * @inheritDoc
      */
-    public function boot(): void
+    public function defaultParams(): array
     {
-        parent::boot();
-
-        $this->set('viewer.directory', $this->social()->resources('/views/partial/share'));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function defaults(): array
-    {
-        return array_merge(parent::defaults(), [
-            'post'      => null,
+        return array_merge(parent::defaultParams(), [
+            'post'    => null,
             /**
              * Paramètres personnalisé de l'url de partage selon le réseau .
              * @var array
              */
-            'channel'   => []
+            'channel' => [],
         ]);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function parseParams(): PartialDriverContract
+    {
+        $this->set('viewer.directory', $this->socialManager()->resources('/views/partial/menu'));
+
+        return parent::parseParams();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function render(): string
     {
         if ($post = ($p = $this->get('post', null)) instanceof QueryPost ? $p : QueryPost::create($p)) {
             $this->set([
-                'items' => (new Collection($this->social()->getChannels()))
-                    ->filter(function (ChannelDriverContract $channel) use ($post) {
-                        if($channel->isActive() && $channel->hasShare()) {
+                'items' => (new Collection($this->socialManager()->getChannels()))
+                    ->filter(function (SocialChannelDriver $channel) use ($post) {
+                        if ($channel->isActive() && $channel->hasShare()) {
                             $channel->setPostShare($post);
 
                             return true;
@@ -57,10 +52,10 @@ class SocialSharePartial extends PartialDriver
 
                         return false;
                     })
-                    ->sortBy(function (ChannelDriverContract $channel) {
+                    ->sortBy(function (SocialChannelDriver $channel) {
                         return $channel->getOrder();
                     })->all(),
-                'post' => $post
+                'post'  => $post,
             ]);
 
             return parent::render();

@@ -2,19 +2,16 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
+use tiFy\Plugins\Social\Contracts\InstagramChannel as InstagramChannelContract;
 use tiFy\Support\Proxy\Url;
 
-class InstagramChannel extends ChannelDriver
+class InstagramChannel extends SocialChannelDriver implements InstagramChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('instagram', $attrs);
-    }
+    protected $name = 'instagram';
 
     /**
      * @inheritDoc

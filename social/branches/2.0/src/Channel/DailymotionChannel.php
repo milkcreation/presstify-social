@@ -2,15 +2,13 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-class DailymotionChannel extends ChannelDriver
+use tiFy\Plugins\Social\Contracts\DailymotionChannel as DailymotionChannelContract;
+
+class DailymotionChannel extends SocialChannelDriver implements DailymotionChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('dailymotion', $attrs);
-    }
+    protected $name = 'dailymotion';
 }

@@ -2,15 +2,13 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-class PinterestChannel extends ChannelDriver
+use tiFy\Plugins\Social\Contracts\PinterestChannel as PinterestChannelContract;
+
+class PinterestChannel extends SocialChannelDriver implements PinterestChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('pinterest', $attrs);
-    }
+    protected $name = 'pinterest';
 }

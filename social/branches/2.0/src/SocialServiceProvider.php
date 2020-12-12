@@ -3,8 +3,20 @@
 namespace tiFy\Plugins\Social;
 
 use tiFy\Container\ServiceProvider;
-use tiFy\Plugins\Social\Contracts\Social as SocialContract;
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Contracts\Partial\Partial as PartialManagerContract;
+use tiFy\Plugins\Social\Contracts\Social as SocialManagerContract;
+use tiFy\Plugins\Social\Contracts\DailymotionChannel as DailymotionChannelContract;
+use tiFy\Plugins\Social\Contracts\FacebookChannel as FacebookChannelContract;
+use tiFy\Plugins\Social\Contracts\GooglePlusChannel as GooglePlusChannelContract;
+use tiFy\Plugins\Social\Contracts\InstagramChannel as InstagramChannelContract;
+use tiFy\Plugins\Social\Contracts\LinkedinChannel as LinkedinChannelContract;
+use tiFy\Plugins\Social\Contracts\PinterestChannel as PinterestChannelContract;
+use tiFy\Plugins\Social\Contracts\SocialMenuPartial as SocialMenuPartialContract;
+use tiFy\Plugins\Social\Contracts\SocialSharePartial as SocialSharePartialContract;
+use tiFy\Plugins\Social\Contracts\TwitterChannel as TwitterChannelContract;
+use tiFy\Plugins\Social\Contracts\ViadeoChannel as ViadeoChannelContract;
+use tiFy\Plugins\Social\Contracts\VimeoChannel as VimeoChannelContract;
+use tiFy\Plugins\Social\Contracts\YoutubeChannel as YoutubeChannelContract;
 use tiFy\Plugins\Social\Channel\DailymotionChannel;
 use tiFy\Plugins\Social\Channel\FacebookChannel;
 use tiFy\Plugins\Social\Channel\GooglePlusChannel;
@@ -15,7 +27,9 @@ use tiFy\Plugins\Social\Channel\TwitterChannel;
 use tiFy\Plugins\Social\Channel\ViadeoChannel;
 use tiFy\Plugins\Social\Channel\VimeoChannel;
 use tiFy\Plugins\Social\Channel\YoutubeChannel;
-use tiFy\Plugins\Social\Channel\ChannelView;
+use tiFy\Plugins\Social\Channel\SocialChannelView;
+use tiFy\Plugins\Social\Partial\SocialMenuPartial;
+use tiFy\Plugins\Social\Partial\SocialSharePartial;
 use tiFy\Support\Proxy\View;
 
 class SocialServiceProvider extends ServiceProvider
@@ -26,19 +40,19 @@ class SocialServiceProvider extends ServiceProvider
      * @var string[]
      */
     protected $provides = [
-        'social',
-        'social.channel.dailymotion',
-        'social.channel.facebook',
-        'social.channel.google-plus',
-        'social.channel.instagram',
-        'social.channel.linkedin',
-        'social.channel.pinterest',
-        'social.channel.twitter',
-        'social.channel.viadeo',
-        'social.channel.vimeo',
-        'social.channel.youtube',
-        'social.channel-view',
-        'social.view',
+        SocialManagerContract::class,
+        DailymotionChannelContract::class,
+        FacebookChannelContract::class,
+        GooglePlusChannelContract::class,
+        InstagramChannelContract::class,
+        LinkedinChannelContract::class,
+        PinterestChannelContract::class,
+        TwitterChannelContract::class,
+        ViadeoChannelContract::class,
+        VimeoChannelContract::class,
+        YoutubeChannelContract::class,
+        'social.channel.view-engine',
+        'social.view-engine',
     ];
 
     /**
@@ -47,7 +61,7 @@ class SocialServiceProvider extends ServiceProvider
     public function boot(): void
     {
         events()->listen('wp.booted', function () {
-            $this->getContainer()->get('social')->boot();
+            $this->getContainer()->get(SocialManagerContract::class)->boot();
         });
     }
 
@@ -56,14 +70,13 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->getContainer()->share('social', function () {
+        $this->getContainer()->share(SocialManagerContract::class, function (): SocialManagerContract {
             return new Social(config('social', []), $this->getContainer());
         });
 
         $this->registerChannels();
-
         $this->registerChannelView();
-
+        $this->registerPartials();
         $this->registerView();
     }
 
@@ -74,44 +87,44 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function registerChannels(): void
     {
-        $this->getContainer()->add('social.channel.dailymotion', function (): ChannelDriverContract {
-            return (new DailymotionChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(DailymotionChannelContract::class, function (): DailymotionChannelContract {
+            return new DailymotionChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.facebook', function (): ChannelDriverContract {
-            return (new FacebookChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(FacebookChannelContract::class, function (): FacebookChannelContract {
+            return new FacebookChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.google-plus', function (): ChannelDriverContract {
-            return (new GooglePlusChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(GooglePlusChannelContract::class, function (): GooglePlusChannelContract {
+            return new GooglePlusChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.instagram', function (): ChannelDriverContract {
-            return (new InstagramChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(InstagramChannelContract::class, function (): InstagramChannelContract {
+            return new InstagramChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.linkedin', function (): ChannelDriverContract {
-            return (new LinkedinChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(LinkedinChannelContract::class, function (): LinkedinChannelContract {
+            return new LinkedinChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.pinterest', function (): ChannelDriverContract {
-            return (new PinterestChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(PinterestChannelContract::class, function (): PinterestChannelContract {
+            return new PinterestChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.twitter', function (): ChannelDriverContract {
-            return (new TwitterChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(TwitterChannelContract::class, function (): TwitterChannelContract {
+            return new TwitterChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.viadeo', function (): ChannelDriverContract {
-            return (new ViadeoChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(ViadeoChannelContract::class, function (): ViadeoChannelContract {
+            return new ViadeoChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.vimeo', function (): ChannelDriverContract {
-            return (new VimeoChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(VimeoChannelContract::class, function (): VimeoChannelContract {
+            return new VimeoChannel($this->getContainer()->get(SocialManagerContract::class));
         });
 
-        $this->getContainer()->add('social.channel.youtube', function (): ChannelDriverContract {
-            return (new YoutubeChannel())->setSocial($this->getContainer()->get('social'));
+        $this->getContainer()->add(YoutubeChannelContract::class, function (): YoutubeChannelContract {
+            return new YoutubeChannel($this->getContainer()->get(SocialManagerContract::class));
         });
     }
 
@@ -122,14 +135,36 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function registerChannelView(): void
     {
-        $this->getContainer()->share('social.channel-view', function () {
-            /** @var SocialContract $social */
-            $social = $this->getContainer()->get('social');
+        $this->getContainer()->share('social.channel.view-engine', function () {
+            /** @var SocialManagerContract $social */
+            $social = $this->getContainer()->get(SocialManagerContract::class);
 
             return View::getPlatesEngine(array_merge([
                 'directory' => $social->resources('views/channel'),
-                'factory'   => ChannelView::class,
-            ],));
+                'factory'   => SocialChannelView::class,
+            ]));
+        });
+    }
+
+    /**
+     * Déclaration des pilotes de portions d'affichage.
+     *
+     * @return void
+     */
+    public function registerPartials(): void
+    {
+        $this->getContainer()->add(SocialMenuPartialContract::class, function (): SocialMenuPartialContract {
+            return new SocialMenuPartial(
+                $this->getContainer()->get(SocialManagerContract::class),
+                $this->getContainer()->get(PartialManagerContract::class)
+            );
+        });
+
+        $this->getContainer()->add(SocialSharePartialContract::class, function (): SocialSharePartialContract {
+            return new SocialSharePartial(
+                $this->getContainer()->get(SocialManagerContract::class),
+                $this->getContainer()->get(PartialManagerContract::class)
+            );
         });
     }
 
@@ -140,9 +175,9 @@ class SocialServiceProvider extends ServiceProvider
      */
     public function registerView(): void
     {
-        $this->getContainer()->share('social.view', function () {
-            /** @var SocialContract $social */
-            $social = $this->getContainer()->get('social');
+        $this->getContainer()->share('social.view-engine', function () {
+            /** @var SocialManagerContract $social */
+            $social = $this->getContainer()->get(SocialManagerContract::class);
 
             return View::getPlatesEngine([
                 'directory' => $social->resources('views'),

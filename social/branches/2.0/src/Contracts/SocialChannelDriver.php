@@ -2,22 +2,42 @@
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use tiFy\Contracts\Support\ParamsBag;
 use tiFy\Contracts\View\PlatesEngine;
-use tiFy\Plugins\Social\SocialAwareTrait;
 use tiFy\Wordpress\Contracts\Query\QueryPost;
 
 /**
- * @mixin SocialAwareTrait
+ * @mixin \tiFy\Plugins\Social\SocialAwareTrait
+ * @mixin \tiFy\Support\Concerns\BootableTrait
+ * @mixin \tiFy\Support\Concerns\ParamsBagTrait
+ * @mixin \tiFy\Support\ParamsBag
  */
-interface ChannelDriver extends ParamsBag
+interface SocialChannelDriver
 {
     /**
-     * Initialisation.
+     * Récupération des paramètres.
      *
-     * @return void
+     * @param string $key
+     *
+     * @return mixed
      */
-    public function boot(): void;
+    public function __get(string $key);
+
+    /**
+     * Délégation d'appel des méthodes du ParamBag.
+     *
+     * @param string $method
+     * @param array $arguments
+     *
+     * @return mixed
+     */
+    public function __call(string $method, array $arguments);
+
+    /**
+     * Chargement.
+     *
+     * @return static
+     */
+    public function boot(): SocialChannelDriver;
 
     /**
      * Récupération du lien profond.
@@ -163,7 +183,7 @@ interface ChannelDriver extends ParamsBag
      *
      * @return static
      */
-    public function setName(string $name): ChannelDriver;
+    public function setName(string $name): SocialChannelDriver;
 
     /**
      * Définition des paramètres de partage d'une publication.
@@ -172,7 +192,7 @@ interface ChannelDriver extends ParamsBag
      *
      * @return static
      */
-    public function setPostShare(QueryPost $post): ChannelDriver;
+    public function setPostShare(QueryPost $post): SocialChannelDriver;
 
     /**
      * Instance du gestionnaire de gabarits d'affichage ou instance du gabarit d'affichage.

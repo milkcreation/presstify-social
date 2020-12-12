@@ -3,21 +3,21 @@
 namespace tiFy\Plugins\Social\Proxy;
 
 use tiFy\Support\Proxy\AbstractProxy;
-use tiFy\Plugins\Social\Contracts\ChannelDriver;
-use tiFy\Plugins\Social\Contracts\Social as SocialContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver;
+use tiFy\Plugins\Social\Contracts\Social as SocialManager;
 
 /**
- * @method static ChannelDriver addChannel(string $name, ChannelDriver|array|string $attrs)
- * @method static ChannelDriver|null getChannel(string $name)
+ * @method static SocialChannelDriver addChannel(string $name, SocialChannelDriver|array|string $attrs)
+ * @method static SocialChannelDriver|null getChannel(string $name)
  * @method static string getChannelLink(string $name, array $attrs = [])
- * @method static ChannelDriver[]|array getChannels()
+ * @method static SocialChannelDriver[]|array getChannels()
  */
 class Social extends AbstractProxy
 {
     /**
      * {@inheritDoc}
      *
-     * @return SocialContract
+     * @return SocialManager|object
      */
     public static function getInstance()
     {
@@ -29,6 +29,6 @@ class Social extends AbstractProxy
      */
     public static function getInstanceIdentifier(): string
     {
-        return 'social';
+        return SocialManager::class;
     }
 }

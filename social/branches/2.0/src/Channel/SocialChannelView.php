@@ -4,7 +4,7 @@ namespace tiFy\Plugins\Social\Channel;
 
 use BadMethodCallException;
 use Exception;
-use tiFy\Plugins\Social\Contracts\ChannelView as ChannelViewContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelView as SocialChannelViewContract;
 use tiFy\View\Factory\PlatesFactory;
 
 /**
@@ -13,7 +13,7 @@ use tiFy\View\Factory\PlatesFactory;
  * @method bool getTitle()
  * @method bool isActive()
  */
-class ChannelView extends PlatesFactory implements ChannelViewContract
+class SocialChannelView extends PlatesFactory implements SocialChannelViewContract
 {
     /**
      * Liste des méthodes héritées.
@@ -29,11 +29,11 @@ class ChannelView extends PlatesFactory implements ChannelViewContract
     /**
      * @inheritDoc
      */
-    public function __call($name, $args)
+    public function __call($name, $arguments)
     {
         if (in_array($name, $this->mixins)) {
             try {
-                return call_user_func_array([$this->engine->params('channel'), $name], $args);
+                return call_user_func_array([$this->engine->params('channel'), $name], $arguments);
             } catch (Exception $e) {
                 throw new BadMethodCallException(sprintf(
                     __CLASS__ . ' throws an exception during the method call [%s] with message : %s',
@@ -41,7 +41,7 @@ class ChannelView extends PlatesFactory implements ChannelViewContract
                 ));
             }
         } else {
-            return parent::__call($name, $args);
+            return parent::__call($name, $arguments);
         }
     }
 }
