@@ -2,19 +2,16 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
+use tiFy\Plugins\Social\Contracts\YoutubeChannel as YoutubeChannelContract;
 use tiFy\Support\Proxy\Url;
 
-class YoutubeChannel extends ChannelDriver
+class YoutubeChannel extends SocialChannelDriver implements YoutubeChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('youtube', $attrs);
-    }
+    protected $name = 'youtube';
 
     /**
      * @inheritDoc

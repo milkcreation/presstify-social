@@ -1,5 +1,11 @@
 # Release Notes
 
+## [v2.0.34 (2020-12-12)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.34...v2.0.34)
+
+### Changed
+
+- Passe réécriture partial + SupportTraits + dossier resources
+
 ## [v2.0.33 (2020-11-26)](https://svn.tigreblanc.fr/presstify-plugins/social/tags/2.0.33...v2.0.33)
 
 ### Fixed 

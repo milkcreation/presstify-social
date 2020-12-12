@@ -2,10 +2,17 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Plugins\Social\Contracts\FacebookChannel as FacebookChannelContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver as SocialChannelDriverContract;
 
-class FacebookChannel extends ChannelDriver
+class FacebookChannel extends SocialChannelDriver implements FacebookChannelContract
 {
+    /**
+     * Nom de qualification.
+     * @var string
+     */
+    protected $name = 'facebook';
+
     /**
      * Url de partage et indicateur de partage possible sur le réseau.
      * @var string
@@ -13,21 +20,11 @@ class FacebookChannel extends ChannelDriver
     protected $sharer = 'https://www.facebook.com/sharer.php';
 
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
-     */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('facebook', $attrs);
-    }
-
-    /**
      * @inheritDoc
      */
     public function getDeeplink(): string
     {
-        if ($id = $this->get('profile_id', '')) {
+        if ($id = $this->get('profile_id')) {
             if ($this->isAndroidOS()) {
                 return "intent://page/{$id}?referrer=app_link#Intent;package=com.facebook.katana;scheme=fb;end";
             } elseif ($this->isIOS()) {
@@ -41,7 +38,7 @@ class FacebookChannel extends ChannelDriver
     /**
      * @inheritDoc
      */
-    public function setPostShare($post): ChannelDriverContract
+    public function setPostShare($post): SocialChannelDriverContract
     {
         $this->share_params = [
             'u' => $post->getPermalink()

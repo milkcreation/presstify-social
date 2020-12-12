@@ -2,23 +2,40 @@
 
 namespace tiFy\Plugins\Social;
 
-use Exception;
-use InvalidArgumentException;
+use InvalidArgumentException, RuntimeException;
 use Psr\Container\ContainerInterface as Container;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
-use tiFy\Plugins\Social\Partial\SocialMenuPartial;
-use tiFy\Plugins\Social\Partial\SocialSharePartial;
+use tiFy\Contracts\Partial\Partial as PartialManagerContract;
+use tiFy\Contracts\View\Engine as ViewEngine;
+use tiFy\Partial\Partial as PartialManager;
+use tiFy\Plugins\Social\Contracts\DailymotionChannel as DailymotionChannelContract;
+use tiFy\Plugins\Social\Contracts\FacebookChannel as FacebookChannelContract;
+use tiFy\Plugins\Social\Contracts\GooglePlusChannel as GooglePlusChannelContract;
+use tiFy\Plugins\Social\Contracts\InstagramChannel as InstagramChannelContract;
+use tiFy\Plugins\Social\Contracts\LinkedinChannel as LinkedinChannelContract;
+use tiFy\Plugins\Social\Contracts\PinterestChannel as PinterestChannelContract;
+use tiFy\Plugins\Social\Contracts\TwitterChannel as TwitterChannelContract;
+use tiFy\Plugins\Social\Contracts\ViadeoChannel as ViadeoChannelContract;
+use tiFy\Plugins\Social\Contracts\VimeoChannel as VimeoChannelContract;
+use tiFy\Plugins\Social\Contracts\YoutubeChannel as YoutubeChannelContract;
+use tiFy\Support\Concerns\BootableTrait;
+use tiFy\Support\Concerns\ContainerAwareTrait;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Metabox;
-use tiFy\Support\Proxy\Partial;
 use tiFy\Support\Proxy\Storage;
-use tiFy\Plugins\Social\Channel\ChannelDriver;
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
-use tiFy\Plugins\Social\Contracts\Social as SocialContract;
 use tiFy\Support\Proxy\View;
+use tiFy\Plugins\Social\Channel\SocialChannelDriver;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver as SocialChannelDriverContract;
+use tiFy\Plugins\Social\Contracts\Social as SocialManagerContract;
+use tiFy\Plugins\Social\Contracts\SocialMenuPartial as SocialMenuPartialContract;
+use tiFy\Plugins\Social\Contracts\SocialSharePartial as SocialSharePartialContract;
+use tiFy\Plugins\Social\Partial\SocialMenuPartial;
+use tiFy\Plugins\Social\Partial\SocialSharePartial;
 
-class Social implements SocialContract
+class Social implements SocialManagerContract
 {
+    use BootableTrait, ContainerAwareTrait;
+
     /**
      * Instance de la classe.
      * @var static|null
@@ -26,35 +43,39 @@ class Social implements SocialContract
     private static $instance;
 
     /**
-     * Indicateur de chargement.
-     * @var bool
-     */
-    private $booted = false;
-
-    /**
-     * Liste des nom de qualification des réseaux disponibles
+     * Liste des réseaux disponibles.
      * @var string[]
      */
     private $defaultsChannels = [
-        'dailymotion',
-        'facebook',
-        'google-plus',
-        'instagram',
-        'linkedin',
-        'pinterest',
-        'twitter',
-        'viadeo',
-        'vimeo',
-        'youtube',
+        'dailymotion' => DailymotionChannelContract::class,
+        'facebook'    => FacebookChannelContract::class,
+        'google-plus' => GooglePlusChannelContract::class,
+        'instagram'   => InstagramChannelContract::class,
+        'linkedin'    => LinkedinChannelContract::class,
+        'pinterest'   => PinterestChannelContract::class,
+        'twitter'     => TwitterChannelContract::class,
+        'viadeo'      => ViadeoChannelContract::class,
+        'vimeo'       => VimeoChannelContract::class,
+        'youtube'     => YoutubeChannelContract::class,
     ];
+
+    /**
+     * Instances de pilotes de réseaux chargés.
+     * @var SocialChannelDriverContract[]|array
+     */
+    private $channels = [];
+
+    /**
+     * Déclaration de réseaux à charger.
+     * @var SocialChannelDriverContract[]|string[]|array
+     */
+    private $channelDefinitions = [];
 
     /**
      * Liste des services par défaut fournis par conteneur d'injection de dépendances.
      * @var array
      */
-    private $defaultProviders = [
-
-    ];
+    private $defaultProviders = [];
 
     /**
      * Instance du gestionnaire des ressources
@@ -63,29 +84,20 @@ class Social implements SocialContract
     private $resources;
 
     /**
-     * Instances des réseaux déclarés.
-     * @var ChannelDriverContract[]|array
-     */
-    protected $channels = [];
-
-    /**
      * Instance du gestionnaire de configuration.
      * @var ParamsBag
      */
     protected $config;
 
     /**
-     * Instance du conteneur d'injection de dépendances.
-     * @var \Psr\Container\ContainerInterface|null
+     * Moteur des gabarits d'affichage.
+     * @var ViewEngine
      */
-    protected $container;
-
-
-    protected $view;
+    protected $viewEngine;
 
     /**
      * @param array $config
-     * @param \Psr\Container\ContainerInterface|null $container
+     * @param Container|null $container
      *
      * @return void
      */
@@ -105,61 +117,39 @@ class Social implements SocialContract
     /**
      * @inheritDoc
      */
-    public static function instance(): SocialContract
+    public static function instance(): SocialManagerContract
     {
         if (self::$instance instanceof self) {
             return self::$instance;
         }
-
-        throw new Exception(sprintf('Unavailable %s instance', __CLASS__));
+        throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
     }
 
     /**
      * @inheritDoc
      */
-    public function addChannel(string $name, $attrs): ChannelDriverContract
+    public function boot(): SocialManagerContract
     {
-        if (is_array($attrs)) {
-            $driver = $attrs['driver'] ?? null;
-            unset($attrs['driver']);
-        } else {
-            $driver = $attrs;
-        }
-
-        if (!$driver) {
-            $driver = ChannelDriver::class;
-        }
-
-        if (is_object($driver)) {
-            $channel = $driver->set($attrs);
-        } elseif (class_exists($driver)) {
-            $channel = new $driver($name, $attrs, $this);
-        } elseif (is_string($driver) && $this->getContainer()) {
-            /** @var ChannelDriverContract $channel */
-            $channel = $this->getContainer()->get("social.channel.{$driver}");
-            $channel->set($attrs);
-        } else {
-            $channel = (new ChannelDriver($name, $attrs))->setSocial($this);
-        }
-
-        if ($driver instanceof ChannelDriverContract) {
-            throw new InvalidArgumentException(
-                sprintf(__('Impossible de définir le pilote associé au réseau social [%s].', 'tify'), $name)
-            );
-        } else {
-            $channel->boot();
-
-            return $this->channels[$name] = $channel->parse();
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function boot(): SocialContract
-    {
-        if (!$this->booted) {
+        if (!$this->isBooted()) {
             register_setting('tify_options', 'tify_social_share');
+
+            $registered = [];
+            if ($channels = $this->config('channel', [])) {
+                foreach ($channels as $k => $v) {
+                    $registered[] = is_numeric($k) ? $v : $k;
+                }
+                $registered = array_intersect($registered, array_keys($this->defaultsChannels));
+            } else {
+                $registered = array_keys($this->defaultsChannels);
+            }
+
+            if ($registered) {
+                foreach ($registered as $name) {
+                    $this->registerChannel($name, array_merge([
+                        'driver' => $this->defaultsChannels[$name],
+                    ], $channels[$name] ?? []));
+                }
+            }
 
             if ($this->config('admin', true)) {
                 Metabox::add('Social', [
@@ -167,30 +157,15 @@ class Social implements SocialContract
                 ])->setScreen('tify_options@options')->setContext('tab');
             }
 
-            $registered = [];
-            if ($channels = $this->config('channel', [])) {
-                foreach ($channels as $k => $v) {
-                    $registered[] = is_numeric($k) ? $v : $k;
-                }
+            $partialManager = ($this->containerHas(PartialManagerContract::class))
+                ? $this->containerGet(PartialManagerContract::class) : new PartialManager();
 
-                $registered = array_intersect($registered, $this->defaultsChannels);
-            } else {
-                $registered = $this->defaultsChannels;
-            }
+            $partialManager->register('social-menu', $this->containerHas(SocialMenuPartialContract::class)
+                ? SocialMenuPartialContract::class : new SocialMenuPartial($this, $partialManager));
+            $partialManager->register('social-share', $this->containerHas(SocialSharePartialContract::class)
+                ? SocialSharePartialContract::class : new SocialSharePartial($this, $partialManager));
 
-            if ($registered) {
-                foreach ($registered as $name) {
-                    $this->addChannel($name, array_merge([
-                        'driver' => $name
-                    ], $channels[$name] ?? []));
-                }
-            }
-
-            //var_dump(get_option('tify_social_share')); exit;
-            Partial::register('social-menu', (new SocialMenuPartial())->setSocial($this));
-            Partial::register('social-share', (new SocialSharePartial())->setSocial($this));
-
-            $this->booted = true;
+            $this->setBooted();
         }
 
         return $this;
@@ -217,9 +192,9 @@ class Social implements SocialContract
     /**
      * @inheritDoc
      */
-    public function getChannel(string $name): ?ChannelDriverContract
+    public function getChannel(string $name): ?SocialChannelDriverContract
     {
-        return $this->channels[$name] ?? null;
+        return $this->loadChannel($name);
     }
 
     /**
@@ -235,15 +210,7 @@ class Social implements SocialContract
      */
     public function getChannels(): array
     {
-        return $this->channels;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getContainer(): ?Container
-    {
-        return $this->container;
+        return $this->loadChannels()->channels;
     }
 
     /**
@@ -257,17 +224,68 @@ class Social implements SocialContract
     /**
      * @inheritDoc
      */
-    public function resolve(string $alias)
+    public function loadChannel(string $name): ?SocialChannelDriverContract
     {
-        return ($container = $this->getContainer()) ? $container->get("social.{$alias}") : null;
+        if (isset($this->channels[$name])) {
+            return $this->channels[$name];
+        } elseif (!$def = $this->channelDefinitions[$name] ?? null) {
+            throw new InvalidArgumentException(sprintf('SocialChannel [%s] not registered.', $name));
+        }
+
+        if (is_array($def)) {
+            $driver = $def['driver'] ?? null;
+            $params = $def;
+            unset($def['driver']);
+        } else {
+            $driver = $def;
+            $params = [];
+        }
+
+        if (!$driver) {
+            $driver = SocialChannelDriver::class;
+        }
+
+        if (is_object($driver)) {
+            $channel = $driver;
+        } elseif (class_exists($driver)) {
+            $channel = new $driver($this);
+        } elseif (is_string($driver) && $this->containerHas($driver)) {
+            $channel = $this->containerGet($driver);
+        } else {
+            $channel = new SocialChannelDriver($this);
+        }
+
+        if ($driver instanceof SocialChannelDriverContract) {
+            throw new InvalidArgumentException(sprintf('Unable to boot SocialChannel [%s] .', $name));
+        } else {
+            if (!$channel->getName()) {
+                $channel->setName($name);
+            }
+
+            return $this->channels[$name] = $channel->setParams($params)->boot();
+        }
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvable(string $alias): bool
+    public function loadChannels(): SocialManagerContract
     {
-        return ($container = $this->getContainer()) && $container->has("social.{$alias}");
+        foreach (array_keys($this->channelDefinitions) as $name) {
+            $this->loadChannel($name);
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function registerChannel(string $name, $channelDefinition): SocialManagerContract
+    {
+        unset($this->channels[$name]);
+        $this->channelDefinitions[$name] = $channelDefinition;
+
+        return $this;
     }
 
     /**
@@ -276,7 +294,7 @@ class Social implements SocialContract
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) ||is_null($this->resources)) {
-            $this->resources = Storage::local(dirname(__DIR__));
+            $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
         }
 
         return is_null($path) ? $this->resources : $this->resources->path($path);
@@ -285,23 +303,7 @@ class Social implements SocialContract
     /**
      * @inheritDoc
      */
-    public function view(?string $name = null, array $data = [])
-    {
-        if (is_null($this->view)) {
-            $this->view = $this->resolve('view');
-        }
-
-        if (func_num_args() === 0) {
-            return $this->view;
-        }
-
-        return $this->view->render($name, $data);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setConfig(array $attrs): SocialContract
+    public function setConfig(array $attrs): SocialManagerContract
     {
         $this->config($attrs);
 
@@ -311,10 +313,17 @@ class Social implements SocialContract
     /**
      * @inheritDoc
      */
-    public function setContainer(Container $container): SocialContract
+    public function view(?string $name = null, array $data = [])
     {
-        $this->container = $container;
+        if (is_null($this->viewEngine)) {
+            $this->viewEngine = $this->containerHas('social.view-engine')
+                ? $this->containerGet('social.view-engine') : View::getPlatesEngine();
+        }
 
-        return $this;
+        if (func_num_args() === 0) {
+            return $this->viewEngine;
+        }
+
+        return $this->viewEngine->render($name, $data);
     }
 }

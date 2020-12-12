@@ -2,15 +2,13 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-class VimeoChannel extends ChannelDriver
+use tiFy\Plugins\Social\Contracts\VimeoChannel as VimeoChannelContract;
+
+class VimeoChannel extends SocialChannelDriver implements VimeoChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('vimeo', $attrs);
-    }
+    protected $name = 'vimeo';
 }

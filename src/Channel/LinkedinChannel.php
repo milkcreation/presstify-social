@@ -2,28 +2,25 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-use tiFy\Plugins\Social\Contracts\ChannelDriver as ChannelDriverContract;
+use tiFy\Plugins\Social\Contracts\LinkedinChannel as LinkedinChannelContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver as SocialChannelDriverContract;
 use tiFy\Support\Proxy\Url;
 use tiFy\Support\Str;
 
-class LinkedinChannel extends ChannelDriver
+class LinkedinChannel extends SocialChannelDriver implements LinkedinChannelContract
 {
+    /**
+     * Nom de qualification.
+     * @var string
+     */
+    protected $name = 'linkedin';
+
     /**
      * Url de partage et indicateur de partage possible sur le réseau.
      * @see https://docs.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin?context=linkedin/consumer/context
      * @var string
      */
     protected $sharer = 'https://www.linkedin.com/shareArticle';
-
-    /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
-     */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('linkedin', $attrs);
-    }
 
     /**
      * @inheritDoc
@@ -45,7 +42,7 @@ class LinkedinChannel extends ChannelDriver
     /**
      * @inheritDoc
      */
-    public function setPostShare($post): ChannelDriverContract
+    public function setPostShare($post): SocialChannelDriverContract
     {
         $this->share_params = [
             'mini'    => 'true',

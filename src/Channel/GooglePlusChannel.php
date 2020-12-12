@@ -2,15 +2,13 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-class GooglePlusChannel extends ChannelDriver
+use tiFy\Plugins\Social\Contracts\GooglePlusChannel as GooglePlusChannelContract;
+
+class GooglePlusChannel extends SocialChannelDriver implements GooglePlusChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('google-plus', $attrs);
-    }
+    protected $name = 'google-plus';
 }

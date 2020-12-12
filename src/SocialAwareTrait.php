@@ -3,7 +3,7 @@
 namespace tiFy\Plugins\Social;
 
 use Exception;
-use tiFy\Plugins\Social\Contracts\Social as SocialContract;
+use tiFy\Plugins\Social\Contracts\Social as SocialManagerContract;
 
 trait SocialAwareTrait
 {
@@ -11,36 +11,36 @@ trait SocialAwareTrait
      * Instance du gestionnaire de réseaux sociaux.
      * @var Social|null
      */
-    protected $social;
+    protected $socialManager;
 
     /**
      * Récupération de l'instance du gestionnaire de réseaux sociaux.
      *
-     * @return Social|null
+     * @return SocialManagerContract|null
      */
-    public function social(): ?Social
+    public function socialManager(): ?SocialManagerContract
     {
-        if (is_null($this->social)) {
+        if (is_null($this->socialManager)) {
             try {
-                $this->social = Social::instance();
+                $this->socialManager = Social::instance();
             } catch (Exception $e) {
-                $this->social;
+                $this->socialManager;
             }
         }
 
-        return $this->social;
+        return $this->socialManager;
     }
 
     /**
      * Définition du gestionnaire de réseaux sociaux.
      *
-     * @param SocialContract $social
+     * @param SocialManagerContract $socialManager
      *
      * @return static
      */
-    public function setSocial(SocialContract $social): self
+    public function setSocialManager(SocialManagerContract $socialManager): self
     {
-        $this->social = $social;
+        $this->socialManager = $socialManager;
 
         return $this;
     }

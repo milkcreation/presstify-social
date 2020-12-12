@@ -2,15 +2,13 @@
 
 namespace tiFy\Plugins\Social\Channel;
 
-class ViadeoChannel extends ChannelDriver
+use tiFy\Plugins\Social\Contracts\ViadeoChannel as ViadeoChannelContract;
+
+class ViadeoChannel extends SocialChannelDriver implements ViadeoChannelContract
 {
     /**
-     * @param array $attrs Attributs de configuration.
-     *
-     * @return void
+     * Nom de qualification.
+     * @var string
      */
-    public function __construct(array $attrs = [])
-    {
-        parent::__construct('viadeo', $attrs);
-    }
+    protected $name = 'viadeo';
 }

@@ -4,7 +4,7 @@ namespace tiFy\Plugins\Social\Metabox;
 
 use tiFy\Metabox\MetaboxDriver;
 use tiFy\Plugins\Social\SocialAwareTrait;
-use tiFy\Plugins\Social\Contracts\ChannelDriver;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver;
 
 class ChannelMetabox extends MetaboxDriver
 {
@@ -12,7 +12,7 @@ class ChannelMetabox extends MetaboxDriver
 
     /**
      * Instance du réseau associé.
-     * @var ChannelDriver
+     * @var SocialChannelDriver
      */
     protected $channel;
 
@@ -38,11 +38,11 @@ class ChannelMetabox extends MetaboxDriver
     /**
      * Définition du réseau associé
      *
-     * @param ChannelDriver $channel
+     * @param SocialChannelDriver $channel
      *
      * @return $this
      */
-    public function setChannel(ChannelDriver $channel): self
+    public function setChannel(SocialChannelDriver $channel): self
     {
         $this->channel = $channel;
 
@@ -75,8 +75,8 @@ class ChannelMetabox extends MetaboxDriver
      */
     public function viewDirectory(): string
     {
-        $directory = $this->social()->resources('views/metabox/' . $this->channel->getName());
+        $directory = $this->socialManager()->resources('views/metabox/' . $this->channel->getName());
 
-        return is_dir($directory) ? $directory : $this->social()->resources('views/metabox');
+        return is_dir($directory) ? $directory : $this->socialManager()->resources('views/metabox');
     }
 }

@@ -4,7 +4,7 @@ namespace tiFy\Plugins\Social\Metabox;
 
 use BadMethodCallException, Exception;
 use tiFy\Metabox\MetaboxView;
-use tiFy\Plugins\Social\Contracts\ChannelView as ChannelViewContract;
+use tiFy\Plugins\Social\Contracts\SocialChannelView;
 
 /**
  * @method string getIcon()
@@ -13,12 +13,12 @@ use tiFy\Plugins\Social\Contracts\ChannelView as ChannelViewContract;
  * @method bool isActive()
  * @method bool isSharer()
  */
-class ChannelMetaboxView extends MetaboxView implements ChannelViewContract
+class ChannelMetaboxView extends MetaboxView implements SocialChannelView
 {
     /**
      * @inheritDoc
      */
-    public function __call($name, $args)
+    public function __call($name, $arguments)
     {
         $channelMixins = [
             'getIcon',
@@ -30,7 +30,7 @@ class ChannelMetaboxView extends MetaboxView implements ChannelViewContract
 
         if (in_array($name, $channelMixins)) {
             try {
-                return call_user_func_array([$this->engine->params('channel'), $name], $args);
+                return call_user_func_array([$this->engine->params('channel'), $name], $arguments);
             } catch (Exception $e) {
                 throw new BadMethodCallException(sprintf(
                     __CLASS__ . ' throws an exception during the method call [%s] with message : %s',
@@ -38,7 +38,7 @@ class ChannelMetaboxView extends MetaboxView implements ChannelViewContract
                 ));
             }
         } else {
-            return parent::__call($name, $args);
+            return parent::__call($name, $arguments);
         }
     }
 }

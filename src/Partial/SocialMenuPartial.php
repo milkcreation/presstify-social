@@ -4,50 +4,29 @@ namespace tiFy\Plugins\Social\Partial;
 
 use Illuminate\Support\Collection;
 use tiFy\Contracts\Partial\PartialDriver as PartialDriverContract;
-use tiFy\Plugins\Social\SocialAwareTrait;
-use tiFy\Plugins\Social\Contracts\{ChannelDriver as ChannelDriverContract};
-use tiFy\Partial\PartialDriver;
+use tiFy\Plugins\Social\Contracts\SocialChannelDriver;
+use tiFy\Plugins\Social\Contracts\SocialMenuPartial as SocialMenuPartialContract;
 
-class SocialMenuPartial extends PartialDriver
+class SocialMenuPartial extends AbstractSocialPartialDriver implements SocialMenuPartialContract
 {
-    use SocialAwareTrait;
-
-    /**
-     * Alias de qualification dans le gestionnaire.
-     * @var string
-     */
-    private $alias = 'social-menu';
-
     /**
      * @inheritDoc
      */
-    public function boot(): void
+    public function defaultParams(): array
     {
-        parent::boot();
-
-        $this->set(
-            'viewer.directory', $this->social()->resources('/views/partial/menu')
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function defaults(): array
-    {
-        return array_merge(parent::defaults(), [
-            'classes' => [
-
-            ]
+        return array_merge(parent::defaultParams(), [
+            'classes' => []
         ]);
     }
 
     /**
      * @inheritDoc
      */
-    public function parse(): PartialDriverContract
+    public function parseParams(): PartialDriverContract
     {
-        parent::parse();
+        $this->set('viewer.directory', $this->socialManager()->resources('/views/partial/menu'));
+
+        parent::parseParams();
 
         $defaultClasses = [
             'item'    => 'Social-menuChannel',
@@ -69,11 +48,11 @@ class SocialMenuPartial extends PartialDriver
     {
         if (!$this->get('items', [])) {
             $this->set([
-                'items' => (new Collection($this->social()->getChannels()))
-                    ->filter(function (ChannelDriverContract $channel) {
+                'items' => (new Collection($this->socialManager()->getChannels()))
+                    ->filter(function (SocialChannelDriver $channel) {
                         return $channel->isActive() && $channel->hasUri();
                     })
-                    ->sortBy(function (ChannelDriverContract $channel) {
+                    ->sortBy(function (SocialChannelDriver $channel) {
                         return $channel->getOrder();
                     })->all(),
             ]);

@@ -10,7 +10,7 @@ use tiFy\Contracts\View\PlatesFactory;
  * @method bool getTitle()
  * @method bool isActive()
  */
-interface ChannelView extends PlatesFactory
+interface SocialChannelView extends PlatesFactory
 {
 
 }

@@ -2,35 +2,22 @@
 
 namespace tiFy\Plugins\Social\Contracts;
 
-use Exception;
-use InvalidArgumentException;
-use Psr\Container\ContainerInterface as Container;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Contracts\Support\ParamsBag;
 use tiFy\Contracts\View\Engine as ViewEngine;
 
+/**
+ * @mixin \tiFy\Support\Concerns\BootableTrait
+ * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ */
 interface Social
 {
     /**
      * Récupération de l'instance.
      *
      * @return static
-     *
-     * @throws Exception
      */
     public static function instance(): Social;
-
-    /**
-     * Ajout d'un réseau à liste des réseaux déclarés.
-     *
-     * @param string $name
-     * @param string|array|ChannelDriver
-     *
-     * @return ChannelDriver
-     *
-     * @throws InvalidArgumentException
-     */
-    public function addChannel(string $name, $attrs): ChannelDriver;
 
     /**
      * Chargement.
@@ -54,9 +41,9 @@ interface Social
      *
      * @param string $name Nom de qualification du réseau.
      *
-     * @return ChannelDriver|null
+     * @return SocialChannelDriver|null
      */
-    public function getChannel(string $name): ?ChannelDriver;
+    public function getChannel(string $name): ?SocialChannelDriver;
 
     /**
      * Rendu d'affichage d'un lien vers la page du compte d'un réseau.
@@ -71,16 +58,9 @@ interface Social
     /**
      * Récupération de la liste des instances de réseaux déclarés.
      *
-     * @return ChannelDriver[]|array
+     * @return SocialChannelDriver[]|array
      */
     public function getChannels(): array;
-
-    /**
-     * Récupération de l'instance du gestionnaire d'injection de dépendances.
-     *
-     * @return Container|null
-     */
-    public function getContainer(): ?Container;
 
     /**
      * Récupération d'un service fourni par le conteneur d'injection de dépendance.
@@ -92,22 +72,30 @@ interface Social
     public function getProvider(string $name);
 
     /**
-     * Résolution de service fourni par le gestionnaire.
+     * Chargement d'un pilote de réseaux déclarés.
      *
-     * @param string $alias
+     * @param string $name
      *
-     * @return object|mixed|null
+     * @return SocialChannelDriver
      */
-    public function resolve(string $alias);
+    public function loadChannel(string $name): ?SocialChannelDriver;
 
     /**
-     * Vérification de résolution possible d'un service fourni par le gestionnaire.
+     * Chargement des pilotes de réseaux déclarés.
      *
-     * @param string $alias
-     *
-     * @return bool
+     * @return static
      */
-    public function resolvable(string $alias): bool;
+    public function loadChannels(): Social;
+
+    /**
+     * Déclaration d'un réseau à liste des réseaux déclarés.
+     *
+     * @param string $name
+     * @param string|array|SocialChannelDriver $channelDefinition
+     *
+     * @return Social
+     */
+    public function registerChannel(string $name, $channelDefinition): Social;
 
     /**
      * Chemin absolu vers une ressources (fichier|répertoire).
@@ -126,15 +114,6 @@ interface Social
      * @return static
      */
     public function setConfig(array $attrs): Social;
-
-    /**
-     * Définition du conteneur d'injection de dépendances.
-     *
-     * @param Container $container
-     *
-     * @return static
-     */
-    public function setContainer(Container $container): Social;
 
     /**
      * Instance du gestionnaire de gabarits d'affichage ou rendu du gabarit d'affichage.
